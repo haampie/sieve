@@ -1,3 +1,7 @@
+# Parallel Algorithms: sieve project
+
+Wat ideeën tijdens college bedacht:
+
 - na i = p kun je alle p processoren getallen laten wegstrepen
 - bij block distributie kun je alvast alle getallen * 2, *3 etc wegstrepen
 
