@@ -5,6 +5,10 @@
 unsigned long N = 100;
 size_t P = 2;
 
+unsigned long max(unsigned long a, unsigned long b){
+  return (a>b) ? a : b;
+}
+
 void sieve() {
   bsp_begin(P);
 
@@ -16,7 +20,7 @@ void sieve() {
   unsigned long sizes[P];
   unsigned long startsAt[P];
 
-  sizes[0] = (unsigned long) sqrt(N) + 1;
+  sizes[0] = max((unsigned long) sqrt(N) + 1, (unsigned long) (N / P));
   startsAt[0] = 0;
 
   unsigned long size = (N - sizes[0] + 1) / (P - 1);
@@ -45,48 +49,30 @@ void sieve() {
   for (unsigned long index = 0; index < sizes[core]; ++index)
     x[index] = 1;
 
+  while (prime < sizes[0])
+    {  
+      if (core == 0)
+	{
+	  // Find the next prime under sqrt(N)
+        
+	  while (!x[prime]){
+	    prime ++;
+	  }
 
-  if (core == 0)
-  {
-    // Find the next prime under sqrt(N)
-    for (; prime < sizes[0]; ++prime)
-    {
-      if (!x[prime])
-        continue;
-
-      // Send it to the others
-      for (size_t proc = 1; proc < P; ++proc)
-        bsp_put(proc, &prime, &prime, 0, sizeof(unsigned long));
-
+	  
+	  // Send it to the others
+	  for (size_t proc = 1; proc < P; ++proc)
+	    bsp_put(proc, &prime, &prime, 0, sizeof(unsigned long));
+	}
       bsp_sync();
 
-      // Sieve it on proc 0
-      for (unsigned long multiple = prime * prime; multiple < sizes[0]; multiple += prime)
-        x[multiple] = 0;
-    }
-
-    // Found all primes < N, so send a stopping signal
-    prime = 0;
-
-    for (size_t proc = 1; proc < P; ++proc)
-      bsp_put(proc, &prime, &prime, 0, sizeof(unsigned long));
-
-    bsp_sync();
-
-  } else {
-    while (1)
-    {
-      bsp_sync();
-
-      // Break at prime = 0 signal
-      if (prime == 0)
-        break;
-
+  
       // Otherwise, sieve the multiples
       for (unsigned long multiple = prime * prime; multiple < startsAt[core] + sizes[core]; multiple += prime)
-        x[multiple - startsAt[core]] = 0;
+	x[multiple - startsAt[core]] = 0;
+      prime ++;
     }
-  }
+  // Found all primes < N, so send a stopping signal
 
   unsigned long count = 0;
 
