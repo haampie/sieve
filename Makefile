@@ -1,5 +1,26 @@
-LFLAGS = /home/teun/MulticoreBSP-for-C/lib/compat-libmcbsp1.2.0.a  -pthread -lm -std=c11
-CFLAGS = -Wall -o psieve
+CXX = g++
+CXXFLAGS = -Wall -std=c++11 -MMD -g
+CXXINCL = -I../bsp/include
+LINKER = $(CXX)
+LDFLAGS =
+LDLIBS = -L../bsp/lib -lmcbsp1.2.0 -lpthread
 
-all: psieve.c
-	gcc psieve.c $(CFLAGS) $(LFLAGS)
+TARGET = bin/main
+SOURCES = main.cc $(wildcard **/*.cc)
+OBJECTS = $(SOURCES:.cc=.o)
+
+DEPS = $(OBJECTS:.o=.d)
+ODIR = ./objects
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(LINKER) $(LDFLAGS) $(OBJECTS) $(LDLIBS) -o $@
+
+%.o: %.cc
+	$(CXX) -c $(CXXFLAGS) $(CXXINCL) $< -o $@
+
+clean:
+	rm -f $(TARGET) $(OBJECTS) $(DEPS)
+
+-include $(DEPS)
