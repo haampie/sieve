@@ -1,9 +1,11 @@
 #ifndef INCLUDED_SIEVE
 #define INCLUDED_SIEVE
 
-unsigned long max(unsigned long a, unsigned long b);
-unsigned long min(unsigned long a, unsigned long b);
-void logLastPrimes(unsigned long counters[], unsigned long startsAt[]);
+#include "../config.h"
+
+ullong max(ullong a, ullong b);
+ullong min(ullong a, ullong b);
+void logLastPrimes(ullong counters[], ullong startsAt[]);
 void sieve();
 
 #endif

@@ -1,12 +1,13 @@
 #include "main.h"
+#include "config.h"
 #include "src/sieve.h"
 #include "src/parallel.h"
 
 #include <iostream>
 
-unsigned long N = 100;
+ullong N = 100;
 MCBSP_PROCESSOR_INDEX_DATATYPE P;
-unsigned long nPrint;
+ullong nPrint;
 
 int main(int argc, char ** argv)
 {
@@ -18,12 +19,6 @@ int main(int argc, char ** argv)
   if (P > bsp_nprocs())
   {
     std::cout << "Sorry, not enough processors available.\n";
-    return 0;
-  }
-
-  if (P <= 1)
-  {
-    std::cout << "Select at least two cores.\n";
     return 0;
   }
 

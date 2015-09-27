@@ -4,13 +4,13 @@
 
 #include <iostream>
 
-extern unsigned long N;
+extern ullong N;
 extern MCBSP_PROCESSOR_INDEX_DATATYPE P;
-extern unsigned long nPrint;
+extern ullong nPrint;
 
-void logPrimes(bool isPrime[], unsigned long sizes[], unsigned long counters[], unsigned long startsAt[]) {
+void logPrimes(bool isPrime[], ullong sizes[], ullong counters[], ullong startsAt[]) {
   size_t startingAtCore = 0;
-  unsigned long total = 0;
+  ullong total = 0;
   MCBSP_PROCESSOR_INDEX_DATATYPE core = bsp_pid();
 
   for (MCBSP_PROCESSOR_INDEX_DATATYPE proc = P - 1; proc >= 0; --proc)
@@ -25,11 +25,11 @@ void logPrimes(bool isPrime[], unsigned long sizes[], unsigned long counters[], 
 
   bsp_sync();
 
-  for (int i = startingAtCore; i < P; i++)
+  for (MCBSP_PROCESSOR_INDEX_DATATYPE proc = startingAtCore; proc < P; ++proc)
   {
-    if (core == i)
+    if (core == proc)
     {
-      for (unsigned long j = 0; j < sizes[core]; j++)
+      for (ullong j = 0; j < sizes[core]; j++)
       {
         if (isPrime[j] && !((core == 0) && (j < 2)))
         {
