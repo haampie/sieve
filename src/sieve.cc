@@ -46,14 +46,14 @@ void sieve() {
     startsAt[index] = startsAt[index - 1] + sizes[index - 1];
   }
 
-  bool numbers[sizes[core]];
+  bool isPrime[sizes[core]];
   unsigned long prime = 2;
 
   bsp_push_reg(&prime, sizeof(unsigned long));
   bsp_sync();
 
   for (unsigned long index = 0; index < sizes[core]; ++index)
-    numbers[index] = true;
+    isPrime[index] = true;
 
   // Start the sieve process
 
@@ -63,8 +63,7 @@ void sieve() {
     if (core == 0)
     {
       // Find the next prime under sqrt(N)
-
-      while (!numbers[prime])
+      while (!isPrime[prime])
         ++prime;
 
       // Send it to the others
@@ -76,41 +75,41 @@ void sieve() {
 
     // Sieve all cores
     for (unsigned long multiple = prime * prime; multiple < startsAt[core] + sizes[core]; multiple += prime)
-      numbers[multiple - startsAt[core]] = false;
+      isPrime[multiple - startsAt[core]] = false;
 
     prime ++;
   }
 
   // Count the primes in each core and find the total
 
-  unsigned long count = 0;
+  unsigned long locally = 0;
+  unsigned long total = 0;
+  unsigned long counters[P];
 
   for (unsigned long index = 0; index < sizes[core]; ++index)
-    if (numbers[index] == true && !((core == 0) && (index < 2)))
-      ++count;
+    if (isPrime[index] == true && !((core == 0) && (index < 2)))
+      ++locally;
 
   // Send the counters to all processors
-  unsigned long counters[P];
   bsp_push_reg(counters, P * (sizeof(unsigned long)));
   bsp_sync();
 
-  for (MCBSP_PROCESSOR_INDEX_DATATYPE i = 0; i < P; i++)
-    bsp_put(i, &count, counters, core * sizeof(unsigned long), sizeof(unsigned long));
+  for (MCBSP_PROCESSOR_INDEX_DATATYPE proc = 0; proc < P; ++proc)
+    bsp_put(proc, &locally, counters, core * sizeof(unsigned long), sizeof(unsigned long));
 
   bsp_sync();
 
-  for (MCBSP_PROCESSOR_INDEX_DATATYPE i = (P - 1); i > 0; i--)
-    counters[i - 1] += counters[i];
+  for (MCBSP_PROCESSOR_INDEX_DATATYPE proc = 0; proc < P; ++proc)
+    total += counters[proc];
 
   if (core == 0)
   {
-    std::cout << "There are " << counters[0] << " primes in under " << N << ". ";
-    std::cout << "The last " << min(nPrint, counters[0]) << " are:\n";
+    std::cout << "There are " << total << " primes in under " << N << ". ";
+    std::cout << "The last " << min(nPrint, total) << " are:\n";
   }
 
-
   // Print the last primes
-  logPrimes(numbers, sizes, counters, startsAt);
+  logPrimes(isPrime, sizes, counters, startsAt);
 
   // Find the time taken
   time1 = bsp_time();
