@@ -1,5 +1,7 @@
 # Parallel Algorithms: sieve project
 
+bla bla bla
+
 Wat ideeën tijdens college bedacht:
 
 - na i = p kun je alle p processoren getallen laten wegstrepen
