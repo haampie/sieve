@@ -14,8 +14,11 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
+  size_t limit = 100000000;
+  
+  if(argc == 2)
+    limit = stoul(argv[1]);
 
-  size_t limit = 1000000000;
   size_t halfLimit = limit / 2;
   size_t sqrtPrimes = sqrt(limit) / 2;
   size_t fourthRoot = static_cast<size_t>(sqrt(sqrt(static_cast<double>(limit)))) / 2;
