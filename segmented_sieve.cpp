@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 
-const size_t CACHE_SIZE = 32768;
+const size_t CACHE_SIZE = 32*1024*4;
 
 void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
 {
