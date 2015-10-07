@@ -60,7 +60,7 @@ void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
 
 int main(int argc, char** argv)
 {
-  size_t limit = 1000000000;
+  size_t limit = 10000000000;
   size_t size = CACHE_SIZE;
 
   segmented_sieve(limit, size);
