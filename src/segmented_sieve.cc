@@ -18,7 +18,7 @@ void segmented_sieve()
 
   // generate small primes <= sqrt
   std::vector<bool> is_prime(sqrt + 1, true);
-  for (size_t i = 2; i * i <= sqrt; i++)
+  for (size_t i = 2; i * i <= sqrt; ++i)
     if (is_prime[i])
       for (size_t j = i * i; j <= sqrt; j += i)
         is_prime[j] = false;
@@ -36,11 +36,11 @@ void segmented_sieve()
     sizes[core] = approxSize;
 
   for (size_t core = 1; core < rem; ++core)
-    sizes[core]++;
+    ++sizes[core];
 
   startsAt[0] = 0;
-  
-  for (processors i = 1; i < P; i++)
+
+  for (processors i = 1; i < P; ++i)
     startsAt[i] = startsAt[i - 1] + sizes[i - 1];
 
   size_t core = bsp_pid();
@@ -56,7 +56,7 @@ void segmented_sieve()
   size_t end_core = startsAt[core] + sizes[core];
   size_t s = 2;
 
-  /** 
+  /**
    * isPrime tells whether the ith element in the bucket is prime
    * We use char since it is only one byte long
    */
@@ -72,7 +72,7 @@ void segmented_sieve()
     size_t high = std::min(low + bucketSize - 1, end_core);
 
     // store small primes needed to cross off multiples
-    for (; s * s <= high; s++)
+    for (; s * s <= high; ++s)
     {
       if (is_prime[s])
       {
@@ -91,7 +91,7 @@ void segmented_sieve()
       }
     }
 
-    for (size_t i = 1; i < primes.size(); i++)
+    for (size_t i = 1; i < primes.size(); ++i)
     {
       size_t j = next[i];
 
@@ -105,18 +105,18 @@ void segmented_sieve()
     {
       if (isPrime[n - low])
       {
-        count++;
+        ++count;
         truePrimes.push_back(n);
       }
     }
   }
 
   if (core == 0)
-    truePrimes[0]++;
+    ++truePrimes[0];
 
   /********** A sanity check print to screen *************/
 
-  for (int i = 0; i < P; i++)
+  for (int i = 0; i < P; ++i)
   {
     bsp_sync();
     if (bsp_pid() == i)
@@ -134,14 +134,14 @@ void segmented_sieve()
   bsp_push_reg(&counters, P * sizeof(size_t));
   bsp_sync();
 
-  for (int i = 0; i < P; i++)
+  for (int i = 0; i < P; ++i)
     bsp_put(i, &count, &counters, i * sizeof(size_t), sizeof(size_t));
 
   bsp_sync();
 
   if (core == 1)
   {
-    for (int i = 0; i < P ; i++)
+    for (int i = 0; i < P ; ++i)
     {
       //std::cout << counters[i] << "\t";
 
