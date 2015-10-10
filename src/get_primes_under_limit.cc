@@ -1,4 +1,5 @@
-#include "segmented_sieve.h"
+#include "get_primes_under_limit.h"
+#include "sieve_bucket.h"
 #include "../config.h"
 
 #include <iostream>
@@ -9,7 +10,7 @@ const size_t CACHE_SIZE = 32 * 1024 * 7;
 extern processors P;
 extern size_t limit;
 
-void segmented_sieve()
+void get_primes_under_limit()
 {
   bsp_begin(P);
   size_t sqrt = (int) std::sqrt((double) limit);
@@ -17,11 +18,11 @@ void segmented_sieve()
   size_t count = 0;
 
   // generate small primes <= sqrt
-  std::vector<bool> is_prime(sqrt + 1, true);
+  std::vector<char> smallerPrimes(sqrt + 1, 1);
   for (size_t i = 2; i * i <= sqrt; ++i)
-    if (is_prime[i])
+    if (smallerPrimes[i])
       for (size_t j = i * i; j <= sqrt; j += i)
-        is_prime[j] = false;
+        smallerPrimes[j] = 0;
 
   /********** End of initial sieving **********/
 
@@ -46,15 +47,12 @@ void segmented_sieve()
   size_t core = bsp_pid();
 
   std::vector<size_t> primes;
-  std::vector<size_t> next;
-  std::vector<size_t> truePrimes;
+  std::vector<size_t> indexInBucket;
 
   size_t start = startsAt[core];
-  size_t n = start - (start % 2) + 1;
-
-  size_t next_pos;
   size_t end_core = startsAt[core] + sizes[core];
   size_t s = 2;
+  size_t n = start - (start % 2) + 1;
 
   /**
    * isPrime tells whether the ith element in the bucket is prime
@@ -63,56 +61,11 @@ void segmented_sieve()
   std::vector<char> isPrime(std::min(bucketSize, sizes[core]));
 
   // Start sieving bucket by bucket
-  // TODO: move this to a seperate function.
   for (size_t low = start; low < end_core; low += bucketSize)
   {
-    std::fill(isPrime.begin(), isPrime.end(), 1);
-
-    // current segment = interval [low, high]
     size_t high = std::min(low + bucketSize - 1, end_core);
-
-    // store small primes needed to cross off multiples
-    for (; s * s <= high; ++s)
-    {
-      if (is_prime[s])
-      {
-        primes.push_back(s);
-        next_pos = 0;
-        if (s * s < low)
-        {
-          next_pos = (ceil(low / (float)s) - s);
-
-          if (next_pos % 2 == 1)
-            next_pos += 1;
-
-          next_pos = s * next_pos;
-        }
-        next.push_back( s * s + next_pos - low);
-      }
-    }
-
-    for (size_t i = 1; i < primes.size(); ++i)
-    {
-      size_t j = next[i];
-
-      for (size_t k = 2 * primes[i] ; j < std::min(bucketSize, high - low); j += k)
-        isPrime[j] = 0;
-
-      next[i] = j - bucketSize;
-    }
-
-    for (; n <= high; n += 2)
-    {
-      if (isPrime[n - low])
-      {
-        ++count;
-        truePrimes.push_back(n);
-      }
-    }
+    sieve_bucket(smallerPrimes, isPrime, primes, indexInBucket, bucketSize, low, high, s, n);
   }
-
-  if (core == 0)
-    ++truePrimes[0];
 
   /********** A sanity check print to screen *************/
 
@@ -121,10 +74,6 @@ void segmented_sieve()
     bsp_sync();
     if (bsp_pid() == i)
     {
-      // std::cout << "\n";
-      // for (size_t i = 0; i < truePrimes.size(); i++) {
-      //   std::cout << truePrimes[i] << "\n";
-      // }
       std::cout << count << " primes found." << "\n";
       bsp_sync();
     }

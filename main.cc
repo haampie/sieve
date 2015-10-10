@@ -1,6 +1,6 @@
 #include "main.h"
 #include "config.h"
-#include "src/segmented_sieve.h"
+#include "src/get_primes_under_limit.h"
 #include "src/parallel.h"
 
 #include <iostream>
@@ -10,6 +10,6 @@ size_t limit = 1000000000;
 
 int main(int argc, char ** argv)
 {
-  bsp_init(segmented_sieve, argc, argv);
-  segmented_sieve();
+  bsp_init(get_primes_under_limit, argc, argv);
+  get_primes_under_limit();
 }
