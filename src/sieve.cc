@@ -41,7 +41,7 @@ void sieve() {
     for (MCBSP_PROCESSOR_INDEX_DATATYPE index = 1; index < P; ++index)
     {
       sizes[index] = size;
-
+      
       if (index <= remains)
         ++sizes[index];
 
@@ -59,7 +59,8 @@ void sieve() {
     isPrime[index] = true;
 
   // Start the sieve process
-
+  ullong crossCtr = 0;
+  
   ullong L = min(sizes[0], sqrt(N) + 1);
   while (prime < L)
   {
@@ -78,8 +79,11 @@ void sieve() {
 
     // Sieve all cores
     for (ullong multiple = prime * prime; multiple < startsAt[core] + sizes[core]; multiple += prime)
-      isPrime[multiple - startsAt[core]] = false;
-
+      {
+	isPrime[multiple - startsAt[core]] = false;
+	crossCtr++;
+      }
+	
     ++prime;
   }
 
@@ -120,5 +124,15 @@ void sieve() {
   if (core == 0)
     std::cout << "Time taken: " << time1 - time0 << '\n';
 
+  bsp_sync();
+
+  for (MCBSP_PROCESSOR_INDEX_DATATYPE proc = 0; proc < P; ++proc)
+    {
+      if (core == proc)
+	std::cout << "Processor " << core << " crossed out " << crossCtr << " numbers.\n";
+      bsp_sync();
+    }
+
+  
   bsp_end();
 }
