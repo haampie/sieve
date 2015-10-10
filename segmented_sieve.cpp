@@ -7,7 +7,6 @@ extern "C" {
 }
 
 const size_t CACHE_SIZE = 32 * 1024 * 7;
-const size_t CACHE_SIZE = 32 * 1024;
 int P = 5;
 
 void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
