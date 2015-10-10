@@ -13,7 +13,7 @@ void segmented_sieve()
 {
   bsp_begin(P);
   size_t sqrt = (int) std::sqrt((double) limit);
-  size_t segment_size = CACHE_SIZE;
+  size_t bucketSize = CACHE_SIZE;
   size_t count = 0;
 
   // generate small primes <= sqrt
@@ -55,14 +55,20 @@ void segmented_sieve()
   size_t end_core = startsAt[core] + sizes[core];
   size_t s = 2;
 
-  std::vector<bool> sieve(std::min(segment_size, sizes[core]));
+  /** 
+   * isPrime tells whether the ith element in the bucket is prime
+   * We use char since it is only one byte long
+   */
+  std::vector<char> isPrime(std::min(bucketSize, sizes[core]));
 
-  for (size_t low = start; low < end_core; low += segment_size)
+  // Start sieving bucket by bucket
+  // TODO: move this to a seperate function.
+  for (size_t low = start; low < end_core; low += bucketSize)
   {
-    std::fill(sieve.begin(), sieve.end(), true);
+    std::fill(isPrime.begin(), isPrime.end(), 1);
 
     // current segment = interval [low, high]
-    size_t high = std::min(low + segment_size - 1, end_core);
+    size_t high = std::min(low + bucketSize - 1, end_core);
 
     // store small primes needed to cross off multiples
     for (; s * s <= high; s++) {
@@ -82,13 +88,14 @@ void segmented_sieve()
     for (size_t i = 1; i < primes.size(); i++)
     {
       size_t j = next[i];
-      for (size_t k = 2 * primes[i] ; j < std::min(segment_size, high - low); j += k) {
-        sieve[j] = false;
-      }
-      next[i] = j - segment_size;
+
+      for (size_t k = 2 * primes[i] ; j < std::min(bucketSize, high - low); j += k)
+        isPrime[j] = 0;
+
+      next[i] = j - bucketSize;
     }
     for (; n <= high; n += 2)
-      if (sieve[n - low]) { // n is a prime
+      if (isPrime[n - low]) { // n is a prime
         count++;
         truePrimes.push_back(n);
       }
