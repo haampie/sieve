@@ -1,23 +1,30 @@
 # Parallel Algorithms: sieve project
 
-bla bla bla
-
-Wat ideeën tijdens college bedacht:
-
-- na i = p kun je alle p processoren getallen laten wegstrepen
-- bij block distributie kun je alvast alle getallen * 2, *3 etc wegstrepen
+Current idea, divide the number line into segments of a fixed width:
 
 ```
-  1  2  3  4  5  6  7  8  9 10
- 11 12 13 14 15 16 17 18 19 20
+ |------------ bucket width --------------|
+ |  1      (3)     (5)     (7)      9     | every proc finds primes <= sqrt(N)
+--------------------------------------------
+ | 11      13      15      17      19     |
+ | 21      23      25      27      29     |- P0
+ | 31      33      35      37      39     |
+ |----------------------------------------|
+ | 41      43      45      47      49     |- P1
+ | 51      53      55      57      59     |
+ |----------------------------------------|
+ | 61      63      65      67      69     |- P2
+ | 71      73      75      77      79     |
+ |----------------------------------------|
+ | 81      83      85      87      89     |- P3
+ | 91      93      95      97      99 1   |
+ |----------------------------------------|
 ```
 
-n=100, loop over 1 t/m 10
-wegstrepen vanaf 1², 2², ..., 10²
+First of all, we discard the prime number two and all its multiples. For ease of programming, we still have each number in memory, but we simply skip even numbers. 
 
-```
-p1  1 --- 10 (proc 1 gaat alles sturen)
-p2 11 --- 20 (hoeft niks te sturen)
-p3 21 --- 30 (hoeft niks te sturen)
-p4 31 --- 40 (hoeft niks te sturen)
-```
+Every processor `P_i` receives a starting number `s_i` and an ending number `e_i` greater than `sqrt(N)`, indicating respectively the start and end of their block of the number line.
+
+Then this interval `[s_i, e_i]` is divided into buckets with a fixed maximal width, which is of such a size that the whole block fits in the L1 cache size of the computer.
+
+For each bucket, we iterate over the primes `3 <= p <= sqrt(N)` and strike off odd multiples, starting from the first odd multiple of `p` greater than or equal to `p^2`.
