@@ -24,7 +24,7 @@ size_t counter = 0;
 size_t latestUsedSieverIndex = 0;
 
 
-void spmd(){
+void spmd() {
   return;
 }
 
@@ -32,11 +32,10 @@ void spmd(){
 int main(int argc, char *argv[])
 {
   size_t limit = 100000000;
-  
-  if(argc == 2)
+
+  if (argc == 2)
     limit = stoul(argv[1]);
 
-<<<<<<< HEAD
   size_t halfLimit = limit / 2;
   size_t sqrtPrimes = sqrt(limit) / 2;
   size_t fourthRoot = static_cast<size_t>(sqrt(sqrt(static_cast<double>(limit)))) / 2;
@@ -44,17 +43,10 @@ int main(int argc, char *argv[])
   // size_t bucketSize = 100;
   size_t counter = 0;
   size_t latestUsedSieverIndex = 0;
-=======
-
-  bsp_init(spmd,argc,argv);
-  bsp_begin(P);
-  spmd();
-  bsp_end();
->>>>>>> a3e34318a4c20a5866bdb3f7fb436a7efb9b99a5
 
   // For finding the first primes.
   vector<bool> smallestPrimes(sqrtPrimes + 1, true);
-  
+
   // Shows whether a certain number in a bucket is prime.
   vector<bool> bucket(bucketSize);
 
@@ -90,7 +82,7 @@ int main(int argc, char *argv[])
   start_at.resize(numberOfSievers);
 
 
-  /** 
+  /**
    * Now start sieving from 0 to N in intervals of size bucketSize.
    */
   for (size_t low = 0; low <= halfLimit; low += bucketSize)
@@ -101,16 +93,16 @@ int main(int argc, char *argv[])
     // Set them all to primes.
     fill(bucket.begin(), bucket.end(), true);
 
-    size_t bucketMax = 2*(low + high);
+    size_t bucketMax = 2 * (low + high);
 
-    while(latestUsedSieverIndex < numberOfSievers)
+    while (latestUsedSieverIndex < numberOfSievers)
     {
       size_t prime = sievers[latestUsedSieverIndex];
-      size_t square = prime * prime; 
-      
-      if(square >= bucketMax) break;
-      
-      start_at[latestUsedSieverIndex] = (square - low*2-1)/2;
+      size_t square = prime * prime;
+
+      if (square >= bucketMax) break;
+
+      start_at[latestUsedSieverIndex] = (square - low * 2 - 1) / 2;
       ++latestUsedSieverIndex;
     }
 
