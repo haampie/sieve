@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <mcbsp.h>
 
 using namespace std;
 
@@ -12,13 +13,30 @@ using namespace std;
  *  Geeft bucket index:   [0,     1,   2,   3,   4]
  */
 
-int main(int argc, char const *argv[])
+int P = 6;
+size_t limit = 1000000;
+size_t halfLimit = limit / 2;
+size_t sqrtPrimes = sqrt(limit) / 2;
+size_t fourthRoot = static_cast<size_t>(sqrt(sqrt(static_cast<double>(limit)))) / 2;
+size_t bucketSize = 32 * 1024 * 7;
+// size_t bucketSize = 100;
+size_t counter = 0;
+size_t latestUsedSieverIndex = 0;
+
+
+void spmd(){
+  return;
+}
+
+
+int main(int argc, char *argv[])
 {
   size_t limit = 100000000;
   
   if(argc == 2)
     limit = stoul(argv[1]);
 
+<<<<<<< HEAD
   size_t halfLimit = limit / 2;
   size_t sqrtPrimes = sqrt(limit) / 2;
   size_t fourthRoot = static_cast<size_t>(sqrt(sqrt(static_cast<double>(limit)))) / 2;
@@ -26,6 +44,13 @@ int main(int argc, char const *argv[])
   // size_t bucketSize = 100;
   size_t counter = 0;
   size_t latestUsedSieverIndex = 0;
+=======
+
+  bsp_init(spmd,argc,argv);
+  bsp_begin(P);
+  spmd();
+  bsp_end();
+>>>>>>> a3e34318a4c20a5866bdb3f7fb436a7efb9b99a5
 
   // For finding the first primes.
   vector<bool> smallestPrimes(sqrtPrimes + 1, true);
