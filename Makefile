@@ -6,7 +6,7 @@ LDFLAGS =
 LDLIBS = -L../bsp/lib -lmcbsp1.2.0 -lpthread
 
 TARGET = bin/main
-SOURCES = main.cc $(wildcard **/*.cc)
+SOURCES = main.cc $(wildcard src/*.cc)
 OBJECTS = $(SOURCES:.cc=.o)
 
 DEPS = $(OBJECTS:.o=.d)

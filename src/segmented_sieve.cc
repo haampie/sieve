@@ -1,17 +1,19 @@
+#include "segmented_sieve.h"
+#include "../config.h"
+
 #include <iostream>
-#include <algorithm>
-#include <cmath>
 #include <vector>
-extern "C" {
-#include <mcbsp.h>
-}
+#include <cmath>
 
 const size_t CACHE_SIZE = 32 * 1024 * 7;
-int P = 5;
+extern processors P;
+extern size_t limit;
 
-void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
+void segmented_sieve()
 {
+  bsp_begin(P);
   size_t sqrt = (int) std::sqrt((double) limit);
+  size_t segment_size = CACHE_SIZE;
   size_t count = 0;
 
   // generate small primes <= sqrt
@@ -30,17 +32,17 @@ void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
   size_t approxSize = (limit - sizes[0]) / (P - 1);
   size_t rem = (limit - sizes[0]) % approxSize;
 
-  for (int core = 1; core < P; core++)
+  for (processors core = 1; core < P; ++core)
     sizes[core] = approxSize;
 
-  for (int core = 1; core < rem; core++)
+  for (size_t core = 1; core < rem; ++core)
     sizes[core]++;
 
   startsAt[0] = 0;
-  for (int i = 1; i < P; i++)
+  for (processors i = 1; i < P; i++)
     startsAt[i] = startsAt[i - 1] + sizes[i - 1];
 
-  unsigned long core = bsp_pid();
+  size_t core = bsp_pid();
 
   std::vector<size_t> primes;
   std::vector<size_t> next;
@@ -100,10 +102,10 @@ void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
   for (int i = 0; i < P; i++) {
     bsp_sync();
     if (bsp_pid() == i) {
-      std::cout << "\n";
-      for (size_t i = 0; i < truePrimes.size(); i++) {
-        std::cout << truePrimes[i] << "\n";
-      }
+      // std::cout << "\n";
+      // for (size_t i = 0; i < truePrimes.size(); i++) {
+      //   std::cout << truePrimes[i] << "\n";
+      // }
       std::cout << count << " primes found." << "\n";
       bsp_sync();
     }
@@ -126,16 +128,5 @@ void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
         counters[i - 1] += counters[i];
 
   //  std::cout << counters[0] << "\n";
-
-}
-
-int main(int argc, char** argv)
-{
-  size_t limit = 100000000;
-  size_t size = CACHE_SIZE;
-  bsp_begin(P);
-  segmented_sieve(limit, size);
   bsp_end();
-
-  return 0;
 }
