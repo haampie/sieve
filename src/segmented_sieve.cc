@@ -39,6 +39,7 @@ void segmented_sieve()
     sizes[core]++;
 
   startsAt[0] = 0;
+  
   for (processors i = 1; i < P; i++)
     startsAt[i] = startsAt[i - 1] + sizes[i - 1];
 
@@ -71,14 +72,19 @@ void segmented_sieve()
     size_t high = std::min(low + bucketSize - 1, end_core);
 
     // store small primes needed to cross off multiples
-    for (; s * s <= high; s++) {
-      if (is_prime[s]) {
+    for (; s * s <= high; s++)
+    {
+      if (is_prime[s])
+      {
         primes.push_back(s);
         next_pos = 0;
-        if (s * s < low) {
+        if (s * s < low)
+        {
           next_pos = (ceil(low / (float)s) - s);
+
           if (next_pos % 2 == 1)
             next_pos += 1;
+
           next_pos = s * next_pos;
         }
         next.push_back( s * s + next_pos - low);
@@ -94,11 +100,15 @@ void segmented_sieve()
 
       next[i] = j - bucketSize;
     }
+
     for (; n <= high; n += 2)
-      if (isPrime[n - low]) { // n is a prime
+    {
+      if (isPrime[n - low])
+      {
         count++;
         truePrimes.push_back(n);
       }
+    }
   }
 
   if (core == 0)
@@ -106,9 +116,11 @@ void segmented_sieve()
 
   /********** A sanity check print to screen *************/
 
-  for (int i = 0; i < P; i++) {
+  for (int i = 0; i < P; i++)
+  {
     bsp_sync();
-    if (bsp_pid() == i) {
+    if (bsp_pid() == i)
+    {
       // std::cout << "\n";
       // for (size_t i = 0; i < truePrimes.size(); i++) {
       //   std::cout << truePrimes[i] << "\n";
@@ -128,11 +140,15 @@ void segmented_sieve()
   bsp_sync();
 
   if (core == 1)
+  {
     for (int i = 0; i < P ; i++)
+    {
       //std::cout << counters[i] << "\t";
 
       for (int i = P - 1; i > 0; i--)
         counters[i - 1] += counters[i];
+    }
+  }
 
   //  std::cout << counters[0] << "\n";
   bsp_end();
