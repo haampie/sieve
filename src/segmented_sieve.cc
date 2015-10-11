@@ -15,6 +15,7 @@ const size_t CACHE_SIZE = 32 * 1024 * 7;
 extern processors P;
 extern size_t limit;
 extern size_t nPrint;
+extern size_t n_GBPrint;
 
 using namespace std;
 
@@ -155,11 +156,8 @@ void segmented_sieve()
     bsp_sync();
   }
   
-  // if (core == 0) // print the resulting vector on core 0
-  //   for (int i = 0; i < segmentPrimes.size(); i++)
-  //     cout << segmentPrimes[i] << "\t";
   if (core == 0)
-    goldbach(&segmentPrimes, limit, 50);
+    goldbach(&segmentPrimes, limit, n_GBPrint);
   
 
   

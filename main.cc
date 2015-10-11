@@ -10,6 +10,7 @@
 processors P = 6;
 size_t limit = 1000;
 size_t nPrint = 0;
+size_t n_GBPrint = 20;
 
 using namespace std;
 
