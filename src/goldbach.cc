@@ -20,17 +20,17 @@ void goldbach(std::vector<size_t>* truePrimes, size_t bound, size_t n_print){
   
   size_t i, j;
   size_t sum;
-  for (i = 0; i < g_size; i++) // go through
-    for (j = i; j < g_size; j++){ // all prime pairs
-      sum = (*truePrimes)[i] + (*truePrimes)[j]; // sum of the two primes.
-      if ( sum <= bound){ // If it is below bound, check it out, otherwise break the j loop
-	if ( !(checkGB[ sum / 2 -1 ]) ) // check if no goldbach pair has been found yet.
-	  if ( sum > bound - 2*n_print  ) // does it lie within the range that needs to be printed?
+  for (i = 0; i < g_size; i++)
+    for (j = i; j < g_size; j++){
+      sum = (*truePrimes)[i] + (*truePrimes)[j];
+      if ( sum <= bound){
+	if ( !(checkGB[ sum / 2 -1 ]) )
+	  if ( sum > bound - 2*n_print  )
 	    {
 	      goldbach_pairs[ n_print - 1 + ((*truePrimes)[i] + (*truePrimes)[j] - bound)/2  ][0] = (*truePrimes)[i];
 	      goldbach_pairs[ n_print - 1 + ((*truePrimes)[i] + (*truePrimes)[j] - bound)/2  ][1] = (*truePrimes)[j];
 	    }
-	checkGB[ sum / 2 - 1 ] = true; // set bool to true
+	checkGB[ sum / 2 - 1 ] = true;
       } else {
 	break;
       }
