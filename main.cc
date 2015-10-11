@@ -7,7 +7,7 @@
 #include <string>
 
 processors P = 4;
-size_t limit = 1000000000;
+size_t limit = 5000000000;
 size_t nPrint = 100;
 
 using namespace std;
