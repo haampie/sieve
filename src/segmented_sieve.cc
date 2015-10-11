@@ -1,4 +1,7 @@
 #include "segmented_sieve.h"
+#include "check_twin.h"
+#include "first_cross.h"
+#include "print_last.h"
 #include "../config.h"
 
 #include <iostream>
@@ -19,7 +22,7 @@ void segmented_sieve()
   // Find all the primes below sqrt by sieving all primes below sqrt(sqrt(limit))
 
   std::vector<bool> is_prime(sqrt + 1, true);
-  for (size_t i = 2; i * i <= sqrt; i++)
+  for (size_t i = 2; i * i <= sqrt; ++i)
     if (is_prime[i])
       for (size_t j = i * i; j <= sqrt; j += i)
         is_prime[j] = false;
@@ -35,14 +38,14 @@ void segmented_sieve()
     size_t approxSize = (limit - sizes[0]) / (P - 1);
     size_t rem = (limit - sizes[0]) % approxSize;
 
-    for (int core = 1; core < P; core++)
+    for (int core = 1; core < P; ++core)
       sizes[core] = approxSize;
 
-    for (int core = 1; core < rem; core++)
-      sizes[core]++;
+    for (int core = 1; core < rem; ++core)
+      ++sizes[core];
 
     startsAt[0] = 0;
-    for (int i = 1; i < P; i++)
+    for (int i = 1; i < P; ++i)
       startsAt[i] = startsAt[i - 1] + sizes[i - 1];
   }
   unsigned long core = bsp_pid(); // core id
@@ -74,14 +77,14 @@ void segmented_sieve()
     {
       if (is_prime[s])
       {
-        num_primes++;
+        ++num_primes;
         primes.push_back(s);
         next.push_back(firstCross(s, low));
       }
-      s++;
+      ++s;
     }
 
-    for (int t = 0; t < num_primes; t++)
+    for (int t = 0; t < num_primes; ++t)
     {
       int j = next[t];
       
@@ -92,8 +95,9 @@ void segmented_sieve()
     }
 
     for (; n <= high; n += 2)
-      if (local_sieve[n - low]) {
-        count++;
+      if (local_sieve[n - low])
+      {
+        ++count;
         truePrimes.push_back(n);
       }
   }
@@ -101,7 +105,7 @@ void segmented_sieve()
   /********** Sieving done! Now the counters need to be added **********/
 
   if (core == 0)
-    truePrimes[0]++;
+    ++truePrimes[0];
 
   size_t extra_prime; // will hold the first prime of the next core for checking the twin primes
   size_t counters[P]; // will hold the counters of all cores
