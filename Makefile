@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -Wall -std=c++11 -MMD -O3
 CXXINCL = -I../bsp/include
 LINKER = $(CXX)
-LDFLAGS =
+LDFLAGS = 
 LDLIBS = -L../bsp/lib -lmcbsp1.2.0 -lpthread
 
 TARGET = bin/main

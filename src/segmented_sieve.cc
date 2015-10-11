@@ -51,16 +51,16 @@ void segmented_sieve()
   segmentBoundaries(&segmentStart, &segmentEnd, startSegmentingFrom, limit, P, core);
 
   // For debuggin the boundaries per core, enable the code here:
-  if (core == 0)
-    cout << "From " << startSegmentingFrom << " to " << limit << '\n';
+  // if (core == 0)
+  //   cout << "From " << startSegmentingFrom << " to " << limit << '\n';
 
-  for (processors i = 0; i < P; ++i)
-  {
-    if (core == i) {
-      cout << segmentStart << ' ' << segmentEnd << "\n";
-    }
-    bsp_sync();
-  }
+  // for (processors i = 0; i < P; ++i)
+  // {
+  //   if (core == i) {
+  //     cout << segmentStart << ' ' << segmentEnd << "\n";
+  //   }
+  //   bsp_sync();
+  // }
 
   // Find all the primes below root by sieving all primes below sqrt(sqrt(limit))
   for (size_t i = 2; i * i <= root; ++i)
@@ -89,7 +89,7 @@ void segmented_sieve()
     // Assume all numbers in the bucket are prime
     fill(bucket.begin(), bucket.end(), 1);
 
-    // The bucket kan end before bucketStart + segmentStart
+    // The bucket can end before bucketStart + segmentStart
     size_t currentBucketSize = bucketEnd - bucketStart + 1;
 
     // Search for new primes which should be used to sieve
@@ -116,7 +116,7 @@ void segmented_sieve()
       if (bucket[n - bucketStart])
       {
         ++count;
-        // segmentPrimes.push_back(n);
+        segmentPrimes.push_back(n);
       }
     }
   }
@@ -137,14 +137,14 @@ void segmented_sieve()
   for (int i = 0; i < P; i++)
     bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
   bsp_sync();
- 
+
   for (int i = P - 1; i > 0; i--)
     counters[i - 1] += counters[i];
 
-  // printLast(&segmentPrimes, P, counters, nPrint);
-
+  printLast(&segmentPrimes, P, counters, nPrint);
+    
   if (core == 0)
-    cout << counters[0] << " primes.\n";
+    cout << counters[0]  << " primes.\n";
 
   bsp_end();
 }
