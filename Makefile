@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++11 -MMD -g -O3
+CXXFLAGS = -Wall -std=c++11 -MMD -O3
 CXXINCL = -I../bsp/include
 LINKER = $(CXX)
 LDFLAGS =

@@ -68,9 +68,6 @@ void segmented_sieve()
   for (size_t i = 3; i <= root; ++i)
     if (isSmallPrime[i])
       sievers.push_back(i);
-  
-  bsp_end();
-  return;
 
   size_t n = segmentStart;
 
@@ -92,7 +89,7 @@ void segmented_sieve()
     size_t currentBucketSize = bucketEnd - bucketStart + 1;
 
     // Search for new primes which should be used to sieve
-    while (sievers[sieverIndex] * sievers[sieverIndex] <= bucketEnd)
+    while (sieverIndex < sievers.size() && sievers[sieverIndex] * sievers[sieverIndex] <= bucketEnd)
     {
       bucketIndex.push_back(firstCross(sievers[sieverIndex], bucketStart));
       ++sieverIndex;
@@ -115,39 +112,10 @@ void segmented_sieve()
       if (bucket[n - bucketStart])
       {
         ++count;
-        segmentPrimes.push_back(n);
+        // segmentPrimes.push_back(n);
       }
     }
   }
-
-  // Print the <= sqrt(sqrt(N)) followed by the rest.
-  if (core == 0)
-  {
-    cout << "2 ";
-    for (size_t i = 0; i < sievers.size(); ++i)
-    {
-      cout << sievers[i] << ' ';
-    }
-  }
-
-  bsp_sync();
-
-  for (processors i = 0; i < P; ++i)
-  {
-    if (core == i)
-    {
-      for (size_t i = 0; i < segmentPrimes.size(); ++i)
-      {
-        cout << segmentPrimes[i] << ' ';
-      }
-      cout << '\n';
-    }
-    bsp_sync();
-  }
-
-  bsp_end();
-  return;
-
 
   /********** Sieving done! Now the counters need to be added **********/
 
