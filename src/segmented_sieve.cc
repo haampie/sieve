@@ -11,6 +11,7 @@
 const size_t CACHE_SIZE = 32 * 1024 * 7;
 extern processors P;
 extern size_t limit;
+extern size_t nPrint;
 
 void segmented_sieve()
 {
@@ -60,18 +61,18 @@ void segmented_sieve()
   size_t end_core = startsAt[core] + sizes[core];
   size_t s = 2;
 
-  std::vector<bool> local_sieve(std::min(size, sizes[core]));
 
-  int bucket_size = CACHE_SIZE; // how big is the interval that we sieve over each time
+  size_t bucketSize = CACHE_SIZE; // how big is the interval that we sieve over each time
   int num_primes = 0;
+  std::vector<bool> bucket(std::min(bucketSize, sizes[core]));
 
-  for (size_t low = start; low < end_core; low += size)
+  for (size_t low = start; low < end_core; low += bucketSize)
   {
 
-    size_t high = std::min(low + size - 1, end_core);
-    std::fill(local_sieve.begin(), local_sieve.end(), true);
+    size_t high = std::min(low + bucketSize - 1, end_core);
+    std::fill(bucket.begin(), bucket.end(), true);
 
-    bucket_size = high - low;
+    size_t currentBucketSize = high - low;
 
     while (s * s <= high)
     {
@@ -88,14 +89,14 @@ void segmented_sieve()
     {
       int j = next[t];
       
-      for (int k = 2 * primes[t]; j <= bucket_size; j += k )
-        local_sieve[j] = false;
+      for (int k = 2 * primes[t]; j <= currentBucketSize; j += k )
+        bucket[j] = false;
 
-      next[t] = j - bucket_size - 1;
+      next[t] = j - currentBucketSize - 1;
     }
 
     for (; n <= high; n += 2)
-      if (local_sieve[n - low])
+      if (bucket[n - low])
       {
         ++count;
         truePrimes.push_back(n);

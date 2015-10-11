@@ -7,6 +7,7 @@
 
 processors P = 4;
 size_t limit = 1000000000;
+size_t nPrint = 100;
 
 int main(int argc, char ** argv)
 {

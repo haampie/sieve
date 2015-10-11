@@ -1,7 +1,6 @@
 #include "check_twin.h"
 
 #include <iostream>
-#include <vector>
 #include <cmath>
 
 void checkTwin(std::vector<size_t>* truePrimes, size_t extra_prime, size_t P) {
