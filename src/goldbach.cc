@@ -16,24 +16,29 @@ void goldbach(std::vector<size_t>* truePrimes, size_t bound, size_t n_print){
   // for (int i = 0; i < g_size; i++)
   //   printf("%lu\n",(*truePrimes)[i]);
 
-  checkGB[1] = 1;
-  int i, j;
+  size_t i, j;
+  size_t sum;
   for (i = 0; i < g_size; i++)
-    for (j = i; j < g_size; j++)
-      if ( (*truePrimes)[i] + (*truePrimes)[j] <= bound){
-	if ( (!(checkGB[((*truePrimes)[i] + (*truePrimes)[j])/2 -1]) ))
-	  if (  (*truePrimes)[i] + (*truePrimes)[j] > bound - 2*n_print  )
+    for (j = i; j < g_size; j++){
+      sum = (*truePrimes)[i] + (*truePrimes)[j];
+      if ( sum <= bound){
+	if ( !(checkGB[ sum / 2 -1 ]) )
+	  if ( sum > bound - 2*n_print  )
 	    {
 	      goldbach_pairs[ n_print - 1 + ((*truePrimes)[i] + (*truePrimes)[j] - bound)/2  ][0] = (*truePrimes)[i];
 	      goldbach_pairs[ n_print - 1 + ((*truePrimes)[i] + (*truePrimes)[j] - bound)/2  ][1] = (*truePrimes)[j];
 	    }
-	checkGB[ ((*truePrimes)[i] + (*truePrimes)[j])/2 - 1 ] = true;
+	checkGB[ sum / 2 - 1 ] = true;
       } else {
 	break;
       }
-
+    }
+  
   for (i = 0;i<n_print;i++)
     printf("%lu + %lu = %lu\n",goldbach_pairs[i][0],goldbach_pairs[i][1],goldbach_pairs[i][1]+goldbach_pairs[i][0]);
- 
 
+  for (int i = 2; i < (bound-1)/2 + 1; i++) // We don't check 2 and 4, so i starts at i.
+    if (!checkGB[i])
+      printf("The Golbach conjecture is false.\n");
+ 
 }
