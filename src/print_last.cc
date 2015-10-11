@@ -3,7 +3,9 @@
 #include <iostream>
 #include "parallel.h"
 
-void printLast(std::vector<size_t>* truePrimes, processors P, size_t * counters, int nPrint)
+using namespace std;
+
+void printLast(vector<size_t> *truePrimes, processors P, size_t *counters, int nPrint)
 {
   processors startCore = 0;
   size_t skipPrint = 0;
@@ -24,7 +26,7 @@ void printLast(std::vector<size_t>* truePrimes, processors P, size_t * counters,
 
     if (current_core == core)
       for (size_t i = skipPrint; i < (*truePrimes).size(); ++i)
-        std::cout << (*truePrimes)[i] << "\n";
+        cout << (*truePrimes)[i] << '\n';
     
     skipPrint = 0;
   }

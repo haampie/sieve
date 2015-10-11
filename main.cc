@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <string>
+#include <cmath>
 
 processors P = 4;
 size_t limit = 1000000000;
@@ -22,6 +23,16 @@ int main(int argc, char ** argv)
 
   if(argc > 3)
     nPrint = stoul(argv[3]);
+
+  // Find a suitable number of cores
+  size_t segmentSize = limit / P;
+
+  // If sqrt(N) > limit / P, then use one core
+  // TODO: find a better P (say P/2 or P/4)
+  if(limit > segmentSize * segmentSize)
+  {
+    P = 1;
+  }
 
   bsp_init(segmented_sieve, argc, argv);
   segmented_sieve();
