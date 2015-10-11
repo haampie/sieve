@@ -4,6 +4,7 @@
 #include "check_twin.h"
 #include "first_cross.h"
 #include "print_last.h"
+#include "goldbach.h"
 #include "../config.h"
 
 #include <iostream>
