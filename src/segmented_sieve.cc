@@ -22,17 +22,21 @@ void segmented_sieve()
   processors core = bsp_pid(); // core id
   size_t root = sqrt(static_cast<double>(limit));
   size_t count = 0;
+  size_t sieverIndex = 0;
 
   // how big is the interval that we sieve over each time
   size_t bucketSize = CACHE_SIZE;
 
-  // Find all the primes below root by sieving all primes below sqrt(sqrt(limit))
-
   vector<char> isSmallPrime(root + 1, 1);
-  for (size_t i = 2; i * i <= root; ++i)
-    if (isSmallPrime[i])
-      for (size_t j = i * i; j <= root; j += i)
-        isSmallPrime[j] = 0;
+
+  // Bucketindex contains the local index where we first need to start sieving bucketPrimes
+  vector<size_t> bucketIndex;
+
+  // Will contain the siever prime numbers
+  vector<size_t> sievers;
+
+  // Will contain primes of the whole segment
+  vector<size_t> segmentPrimes;
 
   /********** End of initial sieving **********/
 
@@ -42,32 +46,43 @@ void segmented_sieve()
   segmentBoundaries(&segmentStart, &segmentEnd, 3, limit, P, core);
 
   // For debuggin the boundaries per core, enable the code here:
-  // if(core == 0)
-  //   cout << "From " << 3 << " to " << limit << '\n';
-  // bsp_sync();
-  // for(processors i = 0; i < P; ++i)
-  // {
-  //   if(core == i) {
-  //     cout << segmentStart << ' ' << segmentEnd << "\n";
-  //   }
-  //   bsp_sync();
-  // }
+  if (core == 0)
+    cout << "From " << 3 << " to " << limit << '\n';
 
-  // Bucketindex contains the local index where we first need to start sieving bucketPrimes 
-  vector<size_t> bucketIndex;
+  for (processors i = 0; i < P; ++i)
+  {
+    if (core == i) {
+      cout << segmentStart << ' ' << segmentEnd << "\n";
+    }
+    bsp_sync();
+  }
 
-  // Will contain the actual prime numbers
-  vector<size_t> primes;
+  // Find all the primes below root by sieving all primes below sqrt(sqrt(limit))
+  for (size_t i = 2; i * i <= root; ++i)
+    if (isSmallPrime[i])
+      for (size_t j = i * i; j <= root; j += i)
+        isSmallPrime[j] = 0;
 
-  size_t s = 2;
+  // Add them to the siever list and mark their first occuren
+  for (size_t i = 3; i <= root; ++i)
+    if (isSmallPrime[i])
+      sievers.push_back(i);
+  
+  bsp_end();
+  return;
+
   size_t n = segmentStart;
+
+  if (n % 2 == 0)
+    --n;
+  
 
   vector<char> bucket(bucketSize);
 
   for (size_t bucketStart = segmentStart; bucketStart < segmentEnd; bucketStart += bucketSize)
   {
     // Upper bound of the current bucket
-    size_t bucketEnd = min(bucketStart + segmentStart, segmentEnd) - 1;
+    size_t bucketEnd = min(bucketStart + bucketSize - 1, segmentEnd);
 
     // Assume all numbers in the bucket are prime
     fill(bucket.begin(), bucket.end(), 1);
@@ -76,23 +91,19 @@ void segmented_sieve()
     size_t currentBucketSize = bucketEnd - bucketStart + 1;
 
     // Search for new primes which should be used to sieve
-    while (s * s <= bucketEnd)
+    while (sievers[sieverIndex] * sievers[sieverIndex] <= bucketEnd)
     {
-      if (isSmallPrime[s])
-      {
-        primes.push_back(s);
-        bucketIndex.push_back(firstCross(s, bucketStart));
-      }
-      ++s;
+      bucketIndex.push_back(firstCross(sievers[sieverIndex], bucketStart));
+      ++sieverIndex;
     }
 
     // Start sieving the bucket
-    for (size_t primeIndex = 0; primeIndex < primes.size(); ++primeIndex)
+    for (size_t primeIndex = 0; primeIndex < sieverIndex; ++primeIndex)
     {
       size_t j = bucketIndex[primeIndex];
-      
+
       // k denotes the step (skip even multiples)
-      for (size_t k = 2 * primes[primeIndex]; j < currentBucketSize; j += k )
+      for (size_t k = 2 * sievers[primeIndex]; j < currentBucketSize; j += k )
         bucket[j] = 0;
 
       bucketIndex[primeIndex] = j - bucketSize;
@@ -103,37 +114,41 @@ void segmented_sieve()
       if (bucket[n - bucketStart])
       {
         ++count;
-        primes.push_back(n);
-
-        if(core == 0)
-        {
-          cout << n << '\n';
-        }
+        segmentPrimes.push_back(n);
       }
     }
-
-
-    for(processors i = 0; i < P ; ++i)
-    {
-      if(core == i)
-      {
-        cout << "Core " << i << '\n';
-        for(size_t i = 0; i < primes.size(); ++i)
-        {
-          cout << primes[i] << ' ';
-        }
-        cout << '\n';
-      }
-      bsp_sync();
-    }
-    return;
   }
+
+  // Print the <= sqrt(sqrt(N)) followed by the rest.
+  if (core == 0)
+  {
+    cout << "2 ";
+    for (size_t i = 0; i < sievers.size(); ++i)
+    {
+      cout << sievers[i] << ' ';
+    }
+  }
+
+  bsp_sync();
+
+  for (processors i = 0; i < P; ++i)
+  {
+    if (core == i)
+    {
+      for (size_t i = 0; i < segmentPrimes.size(); ++i)
+      {
+        cout << segmentPrimes[i] << ' ';
+      }
+      cout << '\n';
+    }
+    bsp_sync();
+  }
+
+  bsp_end();
+  return;
 
 
   /********** Sieving done! Now the counters need to be added **********/
-
-  if (core == 0)
-    ++primes[0];
 
   size_t extra_prime; // will hold the first prime of the next core for checking the twin primes
   size_t counters[P]; // will hold the counters of all cores
@@ -153,7 +168,7 @@ void segmented_sieve()
   for (int i = P - 1; i > 0; i--)
     counters[i - 1] += counters[i];
 
-  printLast(&primes, P, counters, nPrint);
+  // printLast(&segmentPrimes, P, counters, nPrint);
 
   if (core == 0)
     cout << counters[0] << " primes.\n";
