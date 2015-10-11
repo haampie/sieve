@@ -16,7 +16,6 @@ void segmentBoundaries(size_t *from, size_t *to, size_t rangeStart, size_t range
   }
 
   size_t width = (rangeEnd - rangeStart + 1);
-  size_t remains = width % P;
   size_t part = width / P;
 
   *from = rangeStart + index * part;
