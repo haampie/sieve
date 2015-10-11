@@ -3,9 +3,9 @@
 #include <iostream>
 #include <cmath>
 
-void checkTwin(std::vector<size_t>* truePrimes, size_t extra_prime, size_t P) {
-  size_t core = bsp_pid();
-  for (size_t i = 0; i < P; i++) {
+void checkTwin(std::vector<size_t>* truePrimes, size_t extra_prime, processors P) {
+  processors core = bsp_pid();
+  for (processors i = 0; i < P; i++) {
     if (core == i) {
       int p_size = (*truePrimes).size();
       for (int i = 0; i < p_size - 1; i++)

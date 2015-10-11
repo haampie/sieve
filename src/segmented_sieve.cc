@@ -68,7 +68,6 @@ void segmented_sieve()
 
   for (size_t low = start; low < end_core; low += bucketSize)
   {
-
     size_t high = std::min(low + bucketSize - 1, end_core);
     std::fill(bucket.begin(), bucket.end(), true);
 
