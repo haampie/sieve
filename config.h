@@ -1,6 +1,8 @@
 #ifndef INCLUDE_CONFIG
 #define INCLUDE_CONFIG
 
-typedef unsigned long long ullong;
+#include "./src/parallel.h"
 
+typedef unsigned long long ullong;
+typedef MCBSP_PROCESSOR_INDEX_DATATYPE processors;
 #endif

@@ -5,26 +5,19 @@
 extern "C" {
 #include <mcbsp.h>
 }
+#include "functions.h"
 
-const size_t CACHE_SIZE = 8000;
+const size_t CACHE_SIZE = 10000;
 size_t limit = 1000000000;
 size_t size = CACHE_SIZE;
-int P = 5;
-int print = 0; // print de gevonden priem getallen en wat data
+int P = 7;
+size_t nPrint = 6;
 
 // For an array starting at low, this function returns the local index of the first multiple of s that needs to be crossed out.
-int firstCross(int s, int low){
-  if (s*s > low)
-    return (s*s - low);
-  
-  if ((low - s*s) % (2*s) == 0)
-    return 0;
-  
-  return (2*s - ((low - s*s) % (2*s)));
-}
 
 void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
 {
+  limit += 1;
   size_t sqrt = (int) std::sqrt((double) limit);
   size_t count = 0;
 
@@ -38,28 +31,30 @@ void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
   
   /********** End of initial sieving **********/  
   
-  std::vector<size_t> sizes(P);
-  std::vector<size_t> startsAt(P);
+  std::vector<size_t> sizes(P); // This will hold the size of the vector contained on each core
+  std::vector<size_t> startsAt(P); // Starting values of the range of each core
 
   sizes[0] = std::max(sqrt, limit / P);
-  size_t approxSize = (limit - sizes[0]) / (P - 1);
-  size_t rem = (limit - sizes[0]) % approxSize;
- 
-  for (int core = 1; core < P; core++)
-    sizes[core] = approxSize;
-  
-  for (int core = 1; core < rem; core++)
-    sizes[core]++;
 
-  startsAt[0] = 0;
-  for (int i = 1; i < P; i++)
-    startsAt[i] = startsAt[i-1] + sizes[i-1];
+  if (P > 1){
+    size_t approxSize = (limit - sizes[0]) / (P - 1);
+    size_t rem = (limit - sizes[0]) % approxSize;
+ 
+    for (int core = 1; core < P; core++)
+      sizes[core] = approxSize;
   
-  unsigned long core = bsp_pid();
+    for (int core = 1; core < rem; core++)
+      sizes[core]++;
+
+    startsAt[0] = 0;
+    for (int i = 1; i < P; i++)
+      startsAt[i] = startsAt[i-1] + sizes[i-1];
+  }
+  unsigned long core = bsp_pid(); // core id
   
-  std::vector<size_t> primes;
-  std::vector<size_t> next;
-  std::vector<size_t> truePrimes;
+  std::vector<size_t> primes; // Will hold primes that need to be sieved for each bucket
+  std::vector<size_t> next; // Next[i] contains the local index where we first need to start sieving primes[i]
+  std::vector<size_t> truePrimes; // Will contain the actual prime numbers
   
   size_t start = startsAt[core];
   size_t n = start - (start % 2) + 1; 
@@ -67,16 +62,17 @@ void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
   size_t end_core = startsAt[core] + sizes[core];
   size_t s = 2;
 
-  std::vector<bool> sieve(std::min(size, sizes[core]));
-  int bucket_size;
-  int next_pos;
+  std::vector<bool> local_sieve(std::min(size, sizes[core]));
+
+  int bucket_size; // how big is the interval that we sieve over each time
   int num_primes = 0;
   
   for (size_t low = start; low < end_core; low += size)
     {
-      std::fill(sieve.begin(), sieve.end(), true);
-      // current segment = interval [low, high]
+      
       size_t high = std::min(low + size - 1, end_core);
+      std::fill(local_sieve.begin(), local_sieve.end(), true);
+
       bucket_size = high - low;
      
       while (s * s <= high){
@@ -87,65 +83,55 @@ void segmented_sieve(size_t limit, size_t segment_size = CACHE_SIZE)
 	}
 	s++;
       }
-
+         
       for (int t = 0; t < num_primes; t++){
 	int j = next[t];      
-	for (int k = 2*primes[t]; j <= high-low; j += k ){
-	  sieve[j] = false;
+	for (int k = 2*primes[t]; j <= bucket_size; j += k ){
+	  local_sieve[j] = false;
 	}
-	next[t] = firstCross(primes[t], high + 1);
-      }
-            
+	next[t] = j - bucket_size - 1;
+      }            
+      
       for (; n <= high; n += 2)
-	if (sieve[n - low]){
+	if (local_sieve[n - low]){
 	  count++;
-       	  truePrimes.push_back(n);
-       	}
+	  truePrimes.push_back(n);
+	}  
     }
+
+  /********** Sieving done! Now the counters need to be added **********/
 
   if (core == 0)
     truePrimes[0]++;
-
-  if (print == 1)  
-    for (int i = 0; i < P; i++){
-      bsp_sync();
-      if (bsp_pid() == i){
-	std::cout << "\n";
-	for (size_t i = 0; i < size; i++){
-	  std::cout << truePrimes[i] << "\n";
-	}
-	std::cout << count << " primes found." << "\n";
-	bsp_sync();
-      }
-    }
-
-
   
-  /********** Sieving done! Now the counters need to be added **********/
-  
-  size_t counters[P];
-  bsp_push_reg(&counters, P*sizeof(size_t));
+  size_t extra_prime; // will hold the first prime of the next core for checking the twin primes
+  size_t counters[P]; // will hold the counters of all cores
+  bsp_push_reg(&extra_prime,sizeof(size_t)); // register them
+  bsp_push_reg(&counters,P*sizeof(size_t));
   bsp_sync();
 
+  bsp_put((core-1)%P, &(truePrimes[0]), &extra_prime,0,sizeof(size_t));
+  bsp_sync();
+
+  // checkTwin(&truePrimes, extra_prime, P);
+  
   for (int i = 0; i < P; i++)
     bsp_put(i,&count,&counters,core*sizeof(size_t),sizeof(size_t));
-  
   bsp_sync();
 
   for (int i = P-1; i > 0; i--)
     counters[i-1] += counters[i];
 
-  if (core == 0)
-      std::cout << counters[0] << " primes.\n"; 
+  printLast(&truePrimes, P, counters, nPrint);
   
+  if (core == 0)
+      std::cout << counters[0] << " primes.\n";   
 }
 
 int main(int argc, char** argv)
 {
   bsp_begin(P);
   segmented_sieve(limit, size);
-  bsp_end();  
-  std::cout << firstCross(3,33);
-  
+  bsp_end();
   return 0;
 }
