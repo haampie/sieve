@@ -19,6 +19,7 @@ void segmented_sieve()
   limit += 1;
   size_t sqrt = (int) std::sqrt((double) limit);
   size_t count = 0;
+  size_t twin_count = 0;
 
   // Find all the primes below sqrt by sieving all primes below sqrt(sqrt(limit))
 
@@ -61,11 +62,11 @@ void segmented_sieve()
   size_t end_core = startsAt[core] + sizes[core];
   size_t s = 2;
 
-
   size_t bucketSize = CACHE_SIZE; // how big is the interval that we sieve over each time
   int num_primes = 0;
   std::vector<char> bucket(std::min(bucketSize, sizes[core]));
 
+  
   for (size_t low = start; low < end_core; low += bucketSize)
   {
     size_t high = std::min(low + bucketSize - 1, end_core);
@@ -98,14 +99,14 @@ void segmented_sieve()
       if (bucket[n - low])
       {
         ++count;
-        // truePrimes.push_back(n);
+        truePrimes.push_back(n);
       }
   }
 
   /********** Sieving done! Now the counters need to be added **********/
 
-  // if (core == 0)
-  //   ++truePrimes[0];
+  if (core == 0)
+    ++truePrimes[0];
 
   size_t extra_prime; // will hold the first prime of the next core for checking the twin primes
   size_t counters[P]; // will hold the counters of all cores
@@ -113,15 +114,15 @@ void segmented_sieve()
   bsp_push_reg(&counters, P * sizeof(size_t));
   bsp_sync();
 
-  // bsp_put((core - 1) % P, &(truePrimes[0]), &extra_prime, 0, sizeof(size_t));
-  // bsp_sync();
+  bsp_put((core - 1) % P, &(truePrimes[0]), &extra_prime, 0, sizeof(size_t));
+  bsp_sync();
 
-  // checkTwin(&truePrimes, extra_prime, P);
+  checkTwin(&truePrimes, extra_prime, P);
 
   for (int i = 0; i < P; i++)
     bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
   bsp_sync();
-
+ 
   for (int i = P - 1; i > 0; i--)
     counters[i - 1] += counters[i];
 
