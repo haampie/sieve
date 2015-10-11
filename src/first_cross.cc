@@ -1,6 +1,6 @@
 #include "first_cross.h"
 
-int firstCross(int s, int low) {
+size_t firstCross(size_t s, size_t low) {
   if (s * s > low)
     return (s * s - low);
   if ((low - s * s) % (2 * s) == 0)

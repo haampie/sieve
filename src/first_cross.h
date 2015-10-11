@@ -1,6 +1,8 @@
 #ifndef __INCLUDE_FIRSTCROSS__
 #define __INCLUDE_FIRSTCROSS__
 
-int firstCross(int s, int low);
+#include <cstddef>
+
+size_t firstCross(size_t s, size_t low);
 
 #endif

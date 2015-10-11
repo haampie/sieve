@@ -1,5 +1,6 @@
 #include "segmented_sieve.h"
 #include "segment_boundaries.h"
+#include "segment_boundaries_2.h"
 #include "check_twin.h"
 #include "first_cross.h"
 #include "print_last.h"
@@ -43,12 +44,14 @@ void segmented_sieve()
 
   size_t segmentStart;
   size_t segmentEnd;
+  size_t startSegmentingFrom = 3;
 
-  segmentBoundaries(&segmentStart, &segmentEnd, 3, limit, P, core);
+  // segmentBoundariesTryTwo(&segmentStart, &segmentEnd, startSegmentingFrom, limit, P, core);
+  segmentBoundaries(&segmentStart, &segmentEnd, startSegmentingFrom, limit, P, core);
 
   // For debuggin the boundaries per core, enable the code here:
   if (core == 0)
-    cout << "From " << 3 << " to " << limit << '\n';
+    cout << "From " << startSegmentingFrom << " to " << limit << '\n';
 
   for (processors i = 0; i < P; ++i)
   {
