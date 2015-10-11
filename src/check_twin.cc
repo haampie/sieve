@@ -1,8 +1,12 @@
 #include "check_twin.h"
 
-void checkTwin(std::vector<size_t>* truePrimes, size_t extra_prime, unsigned long int P) {
-  unsigned long core = bsp_pid();
-  for (unsigned long i = 0; i < P; i++) {
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+void checkTwin(std::vector<size_t>* truePrimes, size_t extra_prime, size_t P) {
+  size_t core = bsp_pid();
+  for (size_t i = 0; i < P; i++) {
     if (core == i) {
       int p_size = (*truePrimes).size();
       for (int i = 0; i < p_size - 1; i++)

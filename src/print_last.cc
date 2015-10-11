@@ -1,5 +1,8 @@
 #include "print_last.h"
 
+#include <iostream>
+#include <vector>
+
 void printLast(std::vector<size_t>* truePrimes, unsigned long int P, size_t * counters, int nPrint) {
   unsigned long start_core = 0;
   size_t skip_print = 0;
