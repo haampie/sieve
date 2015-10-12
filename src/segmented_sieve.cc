@@ -164,6 +164,31 @@ void segmented_sieve()
 
   /********** Sieving done! Now the counters need to be added **********/
 
+  switch(program)
+  {
+    case TWIN:
+      // Push the last prime to the next core
+      size_t nextPrime;
+      bsp_push_reg(&nextPrime, sizeof(size_t));
+      bsp_sync();
+
+      if(core > 1)
+      {
+        bsp_put(core - 1, &(segmentPrimes[0]), &nextPrime, 0, sizeof(size_t));
+      }
+      bsp_sync();
+
+      // checkTwin(&primes, extra_prime, P);
+
+    break;
+    case GENERATE:
+      // do stuff
+    break;
+    case GOLDBACH:
+      // do stuff
+    break;
+  }
+
   // size_t extra_prime; // will hold the first prime of the next core for checking the twin primes
   // size_t counters[P]; // will hold the counters of all cores
   // bsp_push_reg(&extra_prime, sizeof(size_t)); // register them
