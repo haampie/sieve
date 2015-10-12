@@ -10,7 +10,6 @@
 processors P = 6;
 size_t limit = 100;
 size_t nPrint = 4;
-<<<<<<< HEAD
 N_PROGRAM program;
 
 using namespace std;
