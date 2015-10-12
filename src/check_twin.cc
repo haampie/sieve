@@ -24,16 +24,18 @@ void checkTwin(std::vector<size_t>* truePrimes, size_t extra_prime, processors P
   // for (long unsigned int i = P - 1; i > 0; i--)
   //   twin_counters[i-1] += twin_counters[i];  
   
-  for (processors i = 0; i < P; i++) {
-    if (core == i) {
-      int p_size = (*truePrimes).size();
-      for (int i = 0; i < p_size - 1; i++)
+  for (processors i = 0; i < P; i++) 
+  {
+    if (core == i) 
+    {
+      size_t p_size = (*truePrimes).size();
+      for (size_t i = 0; i < p_size - 1; i++)
         if ((*truePrimes)[i] + 2 == (*truePrimes)[i + 1])
           std::cout << (*truePrimes)[i] << " " << (*truePrimes)[i + 1] << "\n";
+
       if ((*truePrimes)[p_size - 1] + 2 == extra_prime)
         std::cout << extra_prime - 2 << " " << extra_prime << "\n";
     }
     bsp_sync();
   }
-
 }
