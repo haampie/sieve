@@ -18,7 +18,7 @@ void goldbach(vector<size_t>* primes, size_t bound, size_t n_print) {
 	size_t numberOfPrimes = primes->size(); // size for the goldbach part
 
 	if ( n_print >= bound / 2 - 1) { // make sure we are not asking to print too many arguments
-		printf("2 + 2 = 4\n");
+		printf("4 = 2 + 2\n");
 		n_print = bound / 2 - 2;
 	}
 

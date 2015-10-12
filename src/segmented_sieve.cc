@@ -16,7 +16,6 @@ const size_t CACHE_SIZE =  5 * 1024 * 7;
 extern processors P;
 extern size_t limit;
 extern size_t nPrint;
-extern size_t n_GBPrint;
 extern N_PROGRAM program;
 
 using namespace std;
@@ -54,16 +53,16 @@ void segmented_sieve()
   segmentBoundaries(&segmentStart, &segmentEnd, startSegmentingFrom, limit, P, core);
 
   // For debuggin the boundaries per core, enable the code here:
-  if (core == 0)
-    cout << "From " << startSegmentingFrom << " to " << limit << '\n';
+  // if (core == 0)
+  //   cout << "From " << startSegmentingFrom << " to " << limit << '\n';
 
-  for (processors i = 0; i < P; ++i)
-  {
-    if (core == i) {
-      cout << segmentStart << ' ' << segmentEnd << "\n";
-    }
-    bsp_sync();
-  }
+  // for (processors i = 0; i < P; ++i)
+  // {
+  //   if (core == i) {
+  //     cout << segmentStart << ' ' << segmentEnd << "\n";
+  //   }
+  //   bsp_sync();
+  // }
 
   // Find all the primes below root by sieving all primes below sqrt(sqrt(limit))
   for (size_t i = 2; i * i <= root; ++i)
@@ -251,9 +250,21 @@ void segmented_sieve()
 
     break;
   case GOLDBACH:
-    if (n_GBPrint != 0) {
+    if (nPrint != 0) {
+      count = segmentPrimes.size();
+
+      bsp_push_reg(&counters, P * sizeof(size_t));
+      bsp_sync();
+
+      for (processors i = 0; i < P; i++)
+        bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
+      bsp_sync();
+
+      for (processors i = P - 1; i > 0; i--)
+        counters[i - 1] += counters[i];
+
       if (core == 0)
-        segmentPrimes.resize(counters[0], 0); // make the vector in core 0 larger
+        segmentPrimes.resize(counters[0]); // make the vector in core 0 larger
 
       bsp_push_reg(&(segmentPrimes[0]), segmentPrimes.size()*sizeof(size_t)); // register the vectors
       bsp_sync();
@@ -265,20 +276,20 @@ void segmented_sieve()
       }
 
       if (core == 0)
-        goldbach(&segmentPrimes, limit, n_GBPrint);
+        goldbach(&segmentPrimes, limit, nPrint);
     }
     break;
   }
 
   bsp_sync();
 
-  for (processors i = 0; i < P; ++i)
-  {
-    if (i == core)
-      cout << "Core " << i << " took: " << diff << '\n';
+  // for (processors i = 0; i < P; ++i)
+  // {
+  //   if (i == core)
+  //     cout << "Core " << i << " took: " << diff << '\n';
 
-    bsp_sync();
-  }
+  //   bsp_sync();
+  // }
 
   bsp_end();
 }
