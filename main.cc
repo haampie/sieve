@@ -3,6 +3,7 @@
 #include "src/segmented_sieve.h"
 #include "src/parallel.h"
 
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -22,9 +23,13 @@ int main(int argc, char ** argv)
     return 0;
   }
 
-  P = stoul(argv[2]);
-  limit = stoul(argv[3]);
-  nPrint = stoul(argv[4]);
+  size_t procs;
+
+  sscanf(argv[2], "%lu", &procs);
+  sscanf(argv[3], "%lu", &limit);
+  sscanf(argv[4], "%lu", &nPrint);
+
+  P = static_cast<processors>(procs);
 
   string programType = argv[1];
 
