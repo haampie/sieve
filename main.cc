@@ -10,6 +10,7 @@
 processors P = 6;
 size_t limit = 100;
 size_t nPrint = 4;
+<<<<<<< HEAD
 N_PROGRAM program;
 
 using namespace std;
@@ -22,23 +23,30 @@ int main(int argc, char ** argv)
     return 0;
   }
 
+  P = stoul(argv[2]);
+  limit = stoul(argv[3]);
+  nPrint = stoul(argv[4]);
+
   string programType = argv[1];
 
   if(programType == "--generate")
+  {
     program = GENERATE;
+  }
   else if(programType == "--twin")
+  {
     program = TWIN;
+    limit += 2;
+  }
   else if(programType == "--goldbach")
+  {
     program = GOLDBACH;
+  }
   else
   {
     cout << "Wrong program type\n";
     return 0;
   }
-
-  P = stoul(argv[2]);
-  limit = stoul(argv[3]);
-  nPrint = stoul(argv[4]);
 
   // Find a suitable number of cores
   size_t segmentSize = limit / P;
