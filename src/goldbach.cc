@@ -23,10 +23,9 @@ void goldbach(std::vector<size_t>* truePrimes, size_t bound, size_t n_print){
   // In this loop we check to see if all even numbers can we written as a sum of two primes. This
   // is done by looping through the primes and crossing off the
   
-  size_t i, j;
   size_t sum;
-  for (i = 0; i < g_size; i++)
-    for (j = i; j < g_size; j++){
+  for (size_t i = 0; i < 550; i++)
+    for (size_t j = i; j < g_size; j++){
       sum = (*truePrimes)[i] + (*truePrimes)[j];
       if ( sum <= bound){
 	if ( !(checkGB[ sum / 2 -1 ]) )
@@ -41,10 +40,10 @@ void goldbach(std::vector<size_t>* truePrimes, size_t bound, size_t n_print){
       }
     }
   
-  for (i = 0;i<n_print;i++)
+  for (size_t i = 0;i<n_print;i++)
     printf("%lu + %lu = %lu\n",goldbach_pairs[i][0],goldbach_pairs[i][1],goldbach_pairs[i][1]+goldbach_pairs[i][0]);
 
-  for (int i = 2; i < (bound-1)/2 + 1; i++) // We don't check 2 and 4, so i starts at i.
+  for (size_t i = 2; i < (bound-1)/2 + 1; i++) // We don't check 2 and 4, so i starts at i.
     if (!checkGB[i]){
       printf("The Golbach conjecture is false.\n");
       break;
