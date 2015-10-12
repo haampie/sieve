@@ -251,7 +251,7 @@ void segmented_sieve()
 
     break;
   case GOLDBACH:
-    if (n_GBPrint != 0) {
+    if (nPrint != 0) {
       if (core == 0)
         segmentPrimes.resize(counters[0], 0); // make the vector in core 0 larger
 
@@ -265,7 +265,7 @@ void segmented_sieve()
       }
 
       if (core == 0)
-        goldbach(&segmentPrimes, limit, n_GBPrint);
+        goldbach(&segmentPrimes, limit, nPrint);
     }
     break;
   }
