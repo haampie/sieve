@@ -200,6 +200,7 @@ void segmented_sieve()
     for (int i = P - 1; i > 0; i--)
       counters[i - 1] += counters[i];
     printLast(&segmentPrimes, P, counters, nPrint);
+    
     break;
   case GOLDBACH:
     if (n_GBPrint != 0) {
@@ -233,8 +234,8 @@ void segmented_sieve()
 
 
 
-  if (core == 0)
-    cout << counters[0]  << " primes.\n";
+  // if (core == 0)
+  //   cout << counters[0]  << " primes.\n";
 
   bsp_sync();
 
