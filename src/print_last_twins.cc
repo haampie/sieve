@@ -12,9 +12,12 @@ void printLastTwins(vector<size_t> *twins, processors P, size_t *counters, int n
 
   processors startCore = 0;
   size_t skipPrint = 0;
+  processors current_core = bsp_pid();
 
   if (counters[0] < nPrint) { // We need to print more than we have
-    cout << "2\n"; //
+    if (current_core == 0) {
+      cout << "2\n"; //
+    }
   } else if (counters[0] != nPrint) { // if counters[0] == nPrint, we simply need to print all found primes
     for (int i = P - 1; i >= 0; --i)
     {
@@ -27,7 +30,6 @@ void printLastTwins(vector<size_t> *twins, processors P, size_t *counters, int n
     }
   }
 
-  processors current_core = bsp_pid();
   for (processors core = startCore; core < P; ++core)
   {
     bsp_sync();
