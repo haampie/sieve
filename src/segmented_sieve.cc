@@ -173,12 +173,18 @@ void segmented_sieve()
       bsp_sync();
 
       if(core > 1)
-      {
         bsp_put(core - 1, &(segmentPrimes[0]), &nextPrime, 0, sizeof(size_t));
-      }
+
       bsp_sync();
 
-      // checkTwin(&primes, extra_prime, P);
+      // Check for a twin prime on the boundary
+      if(core < P - 1 and segmentPrimes.back() - 2 == segmentPrimes[segmentPrimes.size()-1])
+      {
+        segmentPrimes.push_back(segmentPrimes.back());
+        ++twinCount;
+      }
+
+      checkTwin(&segmentPrimes, P);
 
     break;
     case GENERATE:
@@ -235,13 +241,8 @@ void segmented_sieve()
   for (processors i = 0; i < P; ++i)
   {
     if (i == core)
-    {
-      cout << "Core " << i << " took: " << diff << " and found " << twinCount << " twins:\n";
-      for (size_t j = 0; j < segmentPrimes.size(); ++j)
-      {
-        cout << (segmentPrimes[j] - 2) << " and " << segmentPrimes[j] << '\n';
-      }
-    }
+      cout << "Core " << i << " took: " << diff << '\n';
+
     bsp_sync();
   }
 

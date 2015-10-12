@@ -5,6 +5,6 @@
 #include "../config.h"
 #include <vector>
 
-void checkTwin(std::vector<size_t>* truePrimes, size_t extra_prime, processors P);
+void checkTwin(std::vector<size_t>* twins, processors P);
 
 #endif

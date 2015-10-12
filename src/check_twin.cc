@@ -3,23 +3,18 @@
 #include <iostream>
 #include <cmath>
 
-void checkTwin(std::vector<size_t>* truePrimes, size_t extra_prime, processors P) {
+using namespace std;
 
-  // unsigned long twin_print = 40;
+void checkTwin(vector<size_t>* twins, processors P)
+{
   processors core = bsp_pid();
  
-  for (processors i = 0; i < P; i++) 
+  for (processors i = 0; i < P; ++i)
   {
     if (core == i) 
-    {
-      size_t p_size = (*truePrimes).size();
-      for (size_t i = 0; i < p_size - 1; i++)
-        if ((*truePrimes)[i] + 2 == (*truePrimes)[i + 1])
-          std::cout << (*truePrimes)[i] << " " << (*truePrimes)[i + 1] << "\n";
+      for(size_t j = 0; j < twins->size(); ++j)
+        cout << (*twins)[j] - 2 << " " << (*twins)[j] << '\n';
 
-      if ((*truePrimes)[p_size - 1] + 2 == extra_prime)
-        std::cout << extra_prime - 2 << " " << extra_prime << "\n";
-    }
     bsp_sync();
   }
 }
