@@ -16,6 +16,7 @@ extern processors P;
 extern size_t limit;
 extern size_t nPrint;
 extern size_t n_GBPrint;
+extern N_PROGRAM program;
 
 using namespace std;
 
@@ -25,7 +26,7 @@ void segmented_sieve()
   processors core = bsp_pid(); // core id
   size_t root = sqrt(static_cast<double>(limit));
   size_t count = 0;
-  size_t twin_count = 0;
+  size_t twinCount = 0;
   size_t sieverIndex = 0;
 
   // how big is the interval that we sieve over each time
@@ -77,12 +78,13 @@ void segmented_sieve()
   size_t n = segmentStart;
 
   if (n % 2 == 0)
-    --n;
+    ++n;
 
 
   vector<char> bucket(bucketSize);
 
   double start = bsp_time();
+  char latestInBucketWasPrime = 0;
   for (size_t bucketStart = segmentStart; bucketStart < segmentEnd; bucketStart += bucketSize)
   {
     // Upper bound of the current bucket
@@ -113,59 +115,95 @@ void segmented_sieve()
       bucketIndex[primeIndex] = j - bucketSize;
     }
 
-    for (; n <= bucketEnd; n += 2)
+    switch (program)
     {
-      if (bucket[n - bucketStart])
+    case GENERATE:
+      for (; n <= bucketEnd; n += 2)
       {
-        ++count;
+        if (bucket[n - bucketStart])
+        {
+          ++count;
+          segmentPrimes.push_back(n);
+        }
+      }
+      break;
+    case TWIN:
+      // Start by checking if we found a prime across buckets
+      if (latestInBucketWasPrime && bucket[n - bucketStart])
+      {
+        ++twinCount;
         segmentPrimes.push_back(n);
       }
+
+      // Then go through the rest of the bucket
+      for (n += 2; n <= bucketEnd; n += 2)
+      {
+        if (bucket[n - bucketStart] && bucket[n - bucketStart - 2])
+        {
+          ++twinCount;
+          segmentPrimes.push_back(n);
+        }
+      }
+
+      // n is already above the bound, so the latest is at - 2.
+      latestInBucketWasPrime = bucket[n - bucketStart - 2];
+      break;
+    case GOLDBACH:
+      for (; n <= bucketEnd; n += 2)
+      {
+        if (bucket[n - bucketStart])
+        {
+          ++count;
+          segmentPrimes.push_back(n);
+        }
+      }
+      break;
     }
   }
   double diff = bsp_time() - start;
 
   /********** Sieving done! Now the counters need to be added **********/
 
-  size_t extra_prime; // will hold the first prime of the next core for checking the twin primes
-  size_t counters[P]; // will hold the counters of all cores
-  bsp_push_reg(&extra_prime, sizeof(size_t)); // register them
-  bsp_push_reg(&counters, P * sizeof(size_t));
-  bsp_sync();
-
-  // bsp_put((core - 1) % P, &(primes[0]), &extra_prime, 0, sizeof(size_t));
+  // size_t extra_prime; // will hold the first prime of the next core for checking the twin primes
+  // size_t counters[P]; // will hold the counters of all cores
+  // bsp_push_reg(&extra_prime, sizeof(size_t)); // register them
+  // bsp_push_reg(&counters, P * sizeof(size_t));
   // bsp_sync();
 
-  // checkTwin(&primes, extra_prime, P);
+  // // bsp_put((core - 1) % P, &(primes[0]), &extra_prime, 0, sizeof(size_t));
+  // // bsp_sync();
 
-  for (int i = 0; i < P; i++)
-    bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
-  bsp_sync();
+  // // checkTwin(&primes, extra_prime, P);
 
-  for (int i = P - 1; i > 0; i--)
-    counters[i - 1] += counters[i];
+  // for (int i = 0; i < P; i++)
+  //   bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
+  // bsp_sync();
 
-  printLast(&segmentPrimes, P, counters, nPrint);
+  // for (int i = P - 1; i > 0; i--)
+  //   counters[i - 1] += counters[i];
+
+  // printLast(&segmentPrimes, P, counters, nPrint);
 
 
-  if (n_GBPrint != 0){
-    if (core == 0)
-      segmentPrimes.resize(counters[0], 0); // make the vector in core 0 larger
+  // if (n_GBPrint != 0){
+  //   if (core == 0)
+  //     segmentPrimes.resize(counters[0], 0); // make the vector in core 0 larger
 
-    bsp_push_reg(&(segmentPrimes[0]), segmentPrimes.size()*sizeof(size_t)); // register the vectors
-    bsp_sync();
+  //   bsp_push_reg(&(segmentPrimes[0]), segmentPrimes.size()*sizeof(size_t)); // register the vectors
+  //   bsp_sync();
 
-    for (int i = 1; i < P; i++) {
-      if (core == i) // each core sends their vector to part of the vector in core 0
-        bsp_put(0, &(segmentPrimes[0]), &(segmentPrimes[0]), (counters[0] - counters[i])*sizeof(size_t), count * sizeof(size_t));
-      bsp_sync();
-    }
+  //   for (int i = 1; i < P; i++) {
+  //     if (core == i) // each core sends their vector to part of the vector in core 0
+  //       bsp_put(0, &(segmentPrimes[0]), &(segmentPrimes[0]), (counters[0] - counters[i])*sizeof(size_t), count * sizeof(size_t));
+  //     bsp_sync();
+  //   }
 
-    if (core == 0)
-      goldbach(&segmentPrimes, limit, n_GBPrint);
-  }
+  //   if (core == 0)
+  //     goldbach(&segmentPrimes, limit, n_GBPrint);
+  // }
 
-  if (core == 0)
-    cout << counters[0]  << " primes.\n";
+  // if (core == 0)
+  //   cout << counters[0]  << " primes.\n";
 
   bsp_sync();
 
@@ -173,7 +211,11 @@ void segmented_sieve()
   {
     if (i == core)
     {
-      cout << "Core " << i << " took: " << diff << '\n';
+      cout << "Core " << i << " took: " << diff << " and found " << twinCount << " twins:\n";
+      for (size_t j = 0; j < segmentPrimes.size(); ++j)
+      {
+        cout << (segmentPrimes[j] - 2) << " and " << segmentPrimes[j] << '\n';
+      }
     }
     bsp_sync();
   }

@@ -56,9 +56,13 @@ void goldbach(vector<size_t>* primes, size_t bound, size_t n_print) {
   for (size_t i = 0; i < n_print; ++i)
     printf("%lu + %lu = %lu\n", goldbach_pairs[i][0], goldbach_pairs[i][1], goldbach_pairs[i][1] + goldbach_pairs[i][0]);
 
-  for (size_t i = 2; i < (bound - 1) / 2 + 1; ++i) // We don't check 2 and 4, so i starts at i.
-    if (!checkGB[i]) {
+  // We don't check 2 and 4, so i starts at i.
+  for (size_t i = 2; i < (bound - 1) / 2 + 1; ++i)
+  {
+    if (!checkGB[i])
+    {
       printf("The Golbach conjecture is possibly not true.\n");
       break;
     }
+  }
 }
