@@ -5,10 +5,12 @@
 
 void goldbach(std::vector<size_t>* truePrimes, size_t bound, size_t n_print){
   
-  int checkGB[(bound - 1)/2 + 1] = {false}; // Fill a vector of length (bound-1)/2 with false.
-  // these bools represent all the even numbers 2,4,6,..,bound. Then we will see if all
-  // these may be written as a sum of two (odd) primes. The number 2m corresponds to index
-  // m - 1 in checkGB. Similarly to the number n corresponds the index n/2 - 1
+  int checkGB[(bound - 1)/2 + 1] = {false};
+  // Fill a vector of length (bound-1)/2 with false.   these bools represent all the even numbers
+  // 2,4,6,..,bound. Then we will see if all   these may be written as a sum of two (odd) primes.
+  // The number 2m corresponds to index m - 1 in checkGB. Similarly to the number n corresponds
+  // the index n/2 - 1.
+
   size_t goldbach_pairs[n_print][2];
 
   size_t g_size = truePrimes->size(); // size for the goldbach part
@@ -17,6 +19,9 @@ void goldbach(std::vector<size_t>* truePrimes, size_t bound, size_t n_print){
     printf("2 + 2 = 4\n");
     n_print = bound/2 -2;
   }
+
+  // In this loop we check to see if all even numbers can we written as a sum of two primes. This
+  // is done by looping through the primes and crossing off the
   
   size_t i, j;
   size_t sum;

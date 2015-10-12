@@ -8,9 +8,9 @@
 #include <cmath>
 
 processors P = 6;
-size_t limit = 1000;
+size_t limit = 100;
 size_t nPrint = 0;
-size_t n_GBPrint = 0;
+size_t n_GBPrint = 30;
 
 using namespace std;
 
@@ -34,6 +34,7 @@ int main(int argc, char ** argv)
   {
     P = 1;
   }
+  
 
   bsp_init(segmented_sieve, argc, argv);
   segmented_sieve();
