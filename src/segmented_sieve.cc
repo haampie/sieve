@@ -167,28 +167,57 @@ void segmented_sieve()
 
   /********** Sieving done! Now the counters need to be added **********/
 
-  switch(program)
+  size_t counters[P]; // will hold the counters of all cores
+
+
+  switch (program)
   {
-    case TWIN:
-      // Push the last prime to the next core
-      size_t nextPrime;
-      bsp_push_reg(&nextPrime, sizeof(size_t));
+  case TWIN:
+    // Push the last prime to the next core
+    size_t nextPrime;
+    bsp_push_reg(&nextPrime, sizeof(size_t));
+    bsp_sync();
+
+    if (core > 1)
+    {
+      bsp_put(core - 1, &(segmentPrimes[0]), &nextPrime, 0, sizeof(size_t));
+    }
+    bsp_sync();
+
+    // checkTwin(&primes, extra_prime, P);
+
+    break;
+  case GENERATE:
+    bsp_push_reg(&counters, P * sizeof(size_t));
+    bsp_sync();
+
+    count = segmentPrimes.size();
+
+    for (int i = 0; i < P; i++)
+      bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
+    bsp_sync();
+
+    for (int i = P - 1; i > 0; i--)
+      counters[i - 1] += counters[i];
+    printLast(&segmentPrimes, P, counters, nPrint);
+    break;
+  case GOLDBACH:
+    if (n_GBPrint != 0) {
+      if (core == 0)
+        segmentPrimes.resize(counters[0], 0); // make the vector in core 0 larger
+
+      bsp_push_reg(&(segmentPrimes[0]), segmentPrimes.size()*sizeof(size_t)); // register the vectors
       bsp_sync();
 
-      if(core > 1)
-      {
-        bsp_put(core - 1, &(segmentPrimes[0]), &nextPrime, 0, sizeof(size_t));
+      for (int i = 1; i < P; i++) {
+        if (core == i) // each core sends their vector to part of the vector in core 0
+          bsp_put(0, &(segmentPrimes[0]), &(segmentPrimes[0]), (counters[0] - counters[i])*sizeof(size_t), count * sizeof(size_t));
+        bsp_sync();
       }
-      bsp_sync();
 
-      // checkTwin(&primes, extra_prime, P);
-
-    break;
-    case GENERATE:
-      // do stuff
-    break;
-    case GOLDBACH:
-      // do stuff
+      if (core == 0)
+        goldbach(&segmentPrimes, limit, n_GBPrint);
+    }
     break;
   }
 
@@ -202,38 +231,7 @@ void segmented_sieve()
 
   // checkTwin(&primes, extra_prime, P);
 
-  size_t counters[P]; // will hold the counters of all cores
-  bsp_push_reg(&counters, P * sizeof(size_t));
-  bsp_sync();
 
-  count = segmentPrimes.size();
-
-  for (int i = 0; i < P; i++)
-    bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
-  bsp_sync();
-
-  for (int i = P - 1; i > 0; i--)
-    counters[i - 1] += counters[i];
-
-  printLast(&segmentPrimes, P, counters, nPrint);
-
-
-  if (n_GBPrint != 0){
-    if (core == 0)
-      segmentPrimes.resize(counters[0], 0); // make the vector in core 0 larger
-
-    bsp_push_reg(&(segmentPrimes[0]), segmentPrimes.size()*sizeof(size_t)); // register the vectors
-    bsp_sync();
-
-    for (int i = 1; i < P; i++) {
-      if (core == i) // each core sends their vector to part of the vector in core 0
-        bsp_put(0, &(segmentPrimes[0]), &(segmentPrimes[0]), (counters[0] - counters[i])*sizeof(size_t), count * sizeof(size_t));
-      bsp_sync();
-    }
-
-    if (core == 0)
-      goldbach(&segmentPrimes, limit, n_GBPrint);
-  }
 
   if (core == 0)
     cout << counters[0]  << " primes.\n";
