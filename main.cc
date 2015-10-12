@@ -11,7 +11,7 @@ processors P = 6;
 size_t limit = 100;
 size_t nPrint = 4;
 size_t n_GBPrint = 0;
-N_PROGRAM program = GENERATE;
+N_PROGRAM program = TWIN;
 
 using namespace std;
 

@@ -4,6 +4,7 @@
 #include "check_twin.h"
 #include "first_cross.h"
 #include "print_last.h"
+#include "print_last_twins.h"
 #include "goldbach.h"
 #include "../config.h"
 
@@ -199,7 +200,6 @@ void segmented_sieve()
 
   size_t counters[P]; // will hold the counters of all cores
 
-
   switch (program)
   {
   case TWIN:
@@ -213,15 +213,6 @@ void segmented_sieve()
 
     bsp_sync();
 
-    for (processors i = 0; i < P - 1; ++i)
-    {
-      if (core == i)
-      {
-        cout << "Proc " << i << " received " << nextPrime << " while his last prime is " << lastPrimeNumberInSegment << "\n";
-      }
-      bsp_sync();
-    }
-
     // Check for a twin prime on the boundary
     if (core < P - 1 and lastPrimeNumberInSegment + 2 == nextPrime)
     {
@@ -229,7 +220,19 @@ void segmented_sieve()
       ++twinCount;
     }
 
-    checkTwin(&segmentPrimes, P);
+    count = segmentPrimes.size();
+    
+    bsp_push_reg(&counters, P * sizeof(size_t));
+    bsp_sync();
+
+    for (processors i = 0; i < P; i++)
+      bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
+    bsp_sync();
+
+    for (processors i = P - 1; i > 0; i--)
+      counters[i - 1] += counters[i];
+
+    printLastTwins(&segmentPrimes, P, counters, nPrint);
 
     break;
   case GENERATE:
@@ -238,11 +241,11 @@ void segmented_sieve()
 
     count = segmentPrimes.size();
 
-    for (int i = 0; i < P; i++)
+    for (processors i = 0; i < P; i++)
       bsp_put(i, &count, &counters, core * sizeof(size_t), sizeof(size_t));
     bsp_sync();
 
-    for (int i = P - 1; i > 0; i--)
+    for (processors i = P - 1; i > 0; i--)
       counters[i - 1] += counters[i];
     printLast(&segmentPrimes, P, counters, nPrint);
 
