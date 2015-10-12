@@ -49,7 +49,6 @@ void segmented_sieve()
   size_t segmentEnd;
   size_t startSegmentingFrom = 3;
 
-  // segmentBoundariesTryTwo(&segmentStart, &segmentEnd, startSegmentingFrom, limit, P, core);
   segmentBoundaries(&segmentStart, &segmentEnd, startSegmentingFrom, limit, P, core);
 
   // For debuggin the boundaries per core, enable the code here:
@@ -79,7 +78,6 @@ void segmented_sieve()
 
   if (n % 2 == 0)
     ++n;
-
 
   vector<char> bucket(bucketSize);
 
@@ -283,13 +281,13 @@ void segmented_sieve()
 
   bsp_sync();
 
-  // for (processors i = 0; i < P; ++i)
-  // {
-  //   if (i == core)
-  //     cout << "Core " << i << " took: " << diff << '\n';
+  for (processors i = 0; i < P; ++i)
+  {
+    if (i == core)
+      cout << "Core " << i << " took: " << diff << '\n';
 
-  //   bsp_sync();
-  // }
+    bsp_sync();
+  }
 
   bsp_end();
 }
