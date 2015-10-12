@@ -53,16 +53,16 @@ void segmented_sieve()
   segmentBoundaries(&segmentStart, &segmentEnd, startSegmentingFrom, limit, P, core);
 
   // For debuggin the boundaries per core, enable the code here:
-  // if (core == 0)
-  //   cout << "From " << startSegmentingFrom << " to " << limit << '\n';
+  if (core == 0)
+    cout << "From " << startSegmentingFrom << " to " << limit << '\n';
 
-  // for (processors i = 0; i < P; ++i)
-  // {
-  //   if (core == i) {
-  //     cout << segmentStart << ' ' << segmentEnd << "\n";
-  //   }
-  //   bsp_sync();
-  // }
+  for (processors i = 0; i < P; ++i)
+  {
+    if (core == i) {
+      cout << segmentStart << ' ' << segmentEnd << "\n";
+    }
+    bsp_sync();
+  }
 
   // Find all the primes below root by sieving all primes below sqrt(sqrt(limit))
   for (size_t i = 2; i * i <= root; ++i)
@@ -85,6 +85,12 @@ void segmented_sieve()
 
   double start = bsp_time();
   char latestInBucketWasPrime = 0;
+
+  // Save the first and last prime of segment for twin program
+  size_t firstPrimeNumberInSegment = 0;
+  size_t lastPrimeNumberInSegment = 0;
+  char firstPrimeInSegmentFound = 0;
+
   for (size_t bucketStart = segmentStart; bucketStart < segmentEnd; bucketStart += bucketSize)
   {
     // Upper bound of the current bucket
@@ -128,20 +134,44 @@ void segmented_sieve()
       }
       break;
     case TWIN:
-      // Start by checking if we found a prime across buckets
-      if (latestInBucketWasPrime && bucket[n - bucketStart])
+      // First prime at first index gets special attention
+      // since it can be a twin across buckets
+      if(bucket[n - bucketStart])
       {
-        ++twinCount;
-        segmentPrimes.push_back(n);
+        lastPrimeNumberInSegment = n;
+        if(not firstPrimeInSegmentFound)
+        {
+          firstPrimeInSegmentFound = 1;
+          firstPrimeNumberInSegment = n;
+        }
+
+        if(latestInBucketWasPrime)
+        {
+          ++twinCount;
+          segmentPrimes.push_back(n);
+        }
       }
 
       // Then go through the rest of the bucket
       for (n += 2; n <= bucketEnd; n += 2)
       {
-        if (bucket[n - bucketStart] && bucket[n - bucketStart - 2])
+        if (bucket[n - bucketStart])
         {
-          ++twinCount;
-          segmentPrimes.push_back(n);
+          // Save for intersegment twin primes
+          
+          lastPrimeNumberInSegment = n;
+          if(not firstPrimeInSegmentFound)
+          {
+            firstPrimeInSegmentFound = 1;
+            firstPrimeNumberInSegment = n;
+          }
+
+          // We found a twin.
+          if (bucket[n - bucketStart - 2])
+          {
+            ++twinCount;
+            segmentPrimes.push_back(n);
+          }
         }
       }
 
@@ -167,20 +197,29 @@ void segmented_sieve()
   switch(program)
   {
     case TWIN:
-      // Push the last prime to the next core
+      // Push the first prime of current segment to the previous core
       size_t nextPrime;
       bsp_push_reg(&nextPrime, sizeof(size_t));
       bsp_sync();
 
-      if(core > 1)
-        bsp_put(core - 1, &(segmentPrimes[0]), &nextPrime, 0, sizeof(size_t));
+      if(core > 0)
+        bsp_put(core - 1, &(firstPrimeNumberInSegment), &nextPrime, 0, sizeof(size_t));
 
       bsp_sync();
 
-      // Check for a twin prime on the boundary
-      if(core < P - 1 and segmentPrimes.back() - 2 == segmentPrimes[segmentPrimes.size()-1])
+      for(processors i = 0; i < P-1; ++i)
       {
-        segmentPrimes.push_back(segmentPrimes.back());
+        if(core == i)
+        {
+          cout << "Proc " << i << " received " << nextPrime << " while his last prime is " << lastPrimeNumberInSegment << "\n";
+        }
+        bsp_sync();
+      }
+
+      // Check for a twin prime on the boundary
+      if(core < P - 1 and lastPrimeNumberInSegment + 2 == nextPrime)
+      {
+        segmentPrimes.push_back(nextPrime);
         ++twinCount;
       }
 
