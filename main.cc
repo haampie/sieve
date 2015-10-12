@@ -17,14 +17,29 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-  if (argc > 1)
-    limit = stoul(argv[1]);
+  if(argc != 5)
+  {
+    cout << "Incorrect input\n";
+    return 0;
+  }
 
-  if (argc > 2)
-    P = stoul(argv[2]);
+  string programType = argv[1];
 
-  if (argc > 3)
-    nPrint = stoul(argv[3]);
+  if(programType == "--generate")
+    program = GENERATE;
+  else if(programType == "--twin")
+    program = TWIN;
+  else if(programType == "--goldbach")
+    program = GOLDBACH;
+  else
+  {
+    cout << "Wrong program type\n";
+    return 0;
+  }
+
+  P = stoul(argv[2]);
+  limit = stoul(argv[3]);
+  nPrint = stoul(argv[4]);
 
   // Find a suitable number of cores
   size_t segmentSize = limit / P;
