@@ -12,7 +12,7 @@
 #include <vector>
 #include <cmath>
 
-const size_t CACHE_SIZE = 32 * 1024 * 7;
+const size_t CACHE_SIZE =  5 * 1024 * 7;
 extern processors P;
 extern size_t limit;
 extern size_t nPrint;
@@ -130,7 +130,7 @@ void segmented_sieve()
         if (bucket[n - bucketStart])
         {
           segmentPrimes.push_back(n);
-          if (segmentPrimes.size() > nPrint)
+          if (segmentPrimes.size() > nPrint) // stored more primes than we need to print
           {
             segmentPrimes.erase(segmentPrimes.begin());
           }

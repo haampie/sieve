@@ -8,7 +8,7 @@ using namespace std;
 void goldbach(vector<size_t>* primes, size_t bound, size_t n_print) {
 
 	vector<char> checkGB((bound - 1) / 2 + 1, 0);
-	// Fill a vector of length (bound-1)/2 with false.   these bools represent all the even numbers
+	// Fill a vector of length (bound-1)/2 with false.  These bools represent all the even numbers
 	// 2,4,6,..,bound. Then we will see if all   these may be written as a sum of two (odd) primes.
 	// The number 2m corresponds to index m - 1 in checkGB. Similarly to the number n corresponds
 	// the index n/2 - 1.
