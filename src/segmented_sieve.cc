@@ -78,10 +78,11 @@ void segmented_sieve()
 
   if (n % 2 == 0)
     --n;
-  
+
 
   vector<char> bucket(bucketSize);
 
+  double start = bsp_time();
   for (size_t bucketStart = segmentStart; bucketStart < segmentEnd; bucketStart += bucketSize)
   {
     // Upper bound of the current bucket
@@ -121,6 +122,7 @@ void segmented_sieve()
       }
     }
   }
+  double diff = bsp_time() - start;
 
   /********** Sieving done! Now the counters need to be added **********/
 
@@ -145,23 +147,34 @@ void segmented_sieve()
   printLast(&segmentPrimes, P, counters, nPrint);
   if (n_GBPrint != 0){
     if (core == 0)
-      segmentPrimes.resize(counters[0],0); // make the vector in core 0 larger 
-  
-    bsp_push_reg(&(segmentPrimes[0]),segmentPrimes.size()*sizeof(size_t)); // register the vectors
+      segmentPrimes.resize(counters[0], 0); // make the vector in core 0 larger
+
+    bsp_push_reg(&(segmentPrimes[0]), segmentPrimes.size()*sizeof(size_t)); // register the vectors
     bsp_sync();
 
-    for (int i = 1; i < P; i++){
+    for (int i = 1; i < P; i++) {
       if (core == i) // each core sends their vector to part of the vector in core 0
-	bsp_put(0,&(segmentPrimes[0]),&(segmentPrimes[0]),(counters[0] - counters[i])*sizeof(size_t),count*sizeof(size_t));
+        bsp_put(0, &(segmentPrimes[0]), &(segmentPrimes[0]), (counters[0] - counters[i])*sizeof(size_t), count * sizeof(size_t));
       bsp_sync();
     }
-  
+
     if (core == 0)
       goldbach(&segmentPrimes, limit, n_GBPrint);
   }
-  
+
   if (core == 0)
     cout << counters[0]  << " primes.\n";
+
+  bsp_sync();
+
+  for (processors i = 0; i < P; ++i)
+  {
+    if (i == core)
+    {
+      cout << "Core " << i << " took: " << diff << '\n';
+    }
+    bsp_sync();
+  }
 
   bsp_end();
 }
