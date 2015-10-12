@@ -139,16 +139,16 @@ void segmented_sieve()
     case TWIN:
       // First prime at first index gets special attention
       // since it can be a twin across buckets
-      if(bucket[n - bucketStart])
+      if (bucket[n - bucketStart])
       {
         lastPrimeNumberInSegment = n;
-        if(not firstPrimeInSegmentFound)
+        if (not firstPrimeInSegmentFound)
         {
           firstPrimeInSegmentFound = 1;
           firstPrimeNumberInSegment = n;
         }
 
-        if(latestInBucketWasPrime)
+        if (latestInBucketWasPrime)
         {
           ++twinCount;
           segmentPrimes.push_back(n);
@@ -161,9 +161,9 @@ void segmented_sieve()
         if (bucket[n - bucketStart])
         {
           // Save for intersegment twin primes
-          
+
           lastPrimeNumberInSegment = n;
-          if(not firstPrimeInSegmentFound)
+          if (not firstPrimeInSegmentFound)
           {
             firstPrimeInSegmentFound = 1;
             firstPrimeNumberInSegment = n;
@@ -202,34 +202,34 @@ void segmented_sieve()
 
   switch (program)
   {
-    case TWIN:
-      // Push the first prime of current segment to the previous core
-      size_t nextPrime;
-      bsp_push_reg(&nextPrime, sizeof(size_t));
-      bsp_sync();
+  case TWIN:
+    // Push the first prime of current segment to the previous core
+    size_t nextPrime;
+    bsp_push_reg(&nextPrime, sizeof(size_t));
+    bsp_sync();
 
-      if(core > 0)
-        bsp_put(core - 1, &(firstPrimeNumberInSegment), &nextPrime, 0, sizeof(size_t));
+    if (core > 0)
+      bsp_put(core - 1, &(firstPrimeNumberInSegment), &nextPrime, 0, sizeof(size_t));
 
-      bsp_sync();
+    bsp_sync();
 
-      for(processors i = 0; i < P-1; ++i)
+    for (processors i = 0; i < P - 1; ++i)
+    {
+      if (core == i)
       {
-        if(core == i)
-        {
-          cout << "Proc " << i << " received " << nextPrime << " while his last prime is " << lastPrimeNumberInSegment << "\n";
-        }
-        bsp_sync();
+        cout << "Proc " << i << " received " << nextPrime << " while his last prime is " << lastPrimeNumberInSegment << "\n";
       }
+      bsp_sync();
+    }
 
-      // Check for a twin prime on the boundary
-      if(core < P - 1 and lastPrimeNumberInSegment + 2 == nextPrime)
-      {
-        segmentPrimes.push_back(nextPrime);
-        ++twinCount;
-      }
+    // Check for a twin prime on the boundary
+    if (core < P - 1 and lastPrimeNumberInSegment + 2 == nextPrime)
+    {
+      segmentPrimes.push_back(nextPrime);
+      ++twinCount;
+    }
 
-      checkTwin(&segmentPrimes, P);
+    checkTwin(&segmentPrimes, P);
 
     break;
   case GENERATE:
@@ -245,7 +245,7 @@ void segmented_sieve()
     for (int i = P - 1; i > 0; i--)
       counters[i - 1] += counters[i];
     printLast(&segmentPrimes, P, counters, nPrint);
-    
+
     break;
   case GOLDBACH:
     if (n_GBPrint != 0) {
@@ -266,21 +266,6 @@ void segmented_sieve()
     }
     break;
   }
-
-  // size_t extra_prime; // will hold the first prime of the next core for checking the twin primes
-  // bsp_push_reg(&extra_prime, sizeof(size_t)); // register them
-
-
-
-  // bsp_put((core - 1) % P, &(primes[0]), &extra_prime, 0, sizeof(size_t));
-  // bsp_sync();
-
-  // checkTwin(&primes, extra_prime, P);
-
-
-
-  // if (core == 0)
-  //   cout << counters[0]  << " primes.\n";
 
   bsp_sync();
 
