@@ -1,5 +1,4 @@
 #include "print_last.h"
-
 #include <iostream>
 #include "parallel.h"
 
@@ -7,7 +6,7 @@ using namespace std;
 
 void printLast(vector<size_t> *primes, processors P, size_t *counters, int nPrint)
 {
-  // Determine in what core we need to starr printing and what the local index is of
+  // Determine in what core we need to start printing and what the local index is of
   // the first prime that needs to be printed.
 
   processors startCore = 0;
@@ -31,7 +30,6 @@ void printLast(vector<size_t> *primes, processors P, size_t *counters, int nPrin
   for (processors core = startCore; core < P; ++core)
   {
     bsp_sync();
-
     if (current_core == core) // make sure the cores only print one at a time
       for (size_t i = skipPrint; i < (*primes).size(); ++i)
         cout << (*primes)[i] << '\n';

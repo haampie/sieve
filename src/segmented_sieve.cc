@@ -221,7 +221,7 @@ void segmented_sieve()
     }
 
     count = segmentPrimes.size();
-    
+
     bsp_push_reg(&counters, P * sizeof(size_t));
     bsp_sync();
 
@@ -258,7 +258,7 @@ void segmented_sieve()
       bsp_push_reg(&(segmentPrimes[0]), segmentPrimes.size()*sizeof(size_t)); // register the vectors
       bsp_sync();
 
-      for (int i = 1; i < P; i++) {
+      for (processors i = 1; i < P; i++) {
         if (core == i) // each core sends their vector to part of the vector in core 0
           bsp_put(0, &(segmentPrimes[0]), &(segmentPrimes[0]), (counters[0] - counters[i])*sizeof(size_t), count * sizeof(size_t));
         bsp_sync();
