@@ -145,6 +145,8 @@ void segmented_sieve()
     counters[i - 1] += counters[i];
 
   printLast(&segmentPrimes, P, counters, nPrint);
+
+
   if (n_GBPrint != 0){
     if (core == 0)
       segmentPrimes.resize(counters[0], 0); // make the vector in core 0 larger
