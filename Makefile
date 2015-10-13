@@ -5,7 +5,7 @@ CXXFLAGS = -MMD -O3
 LINKER = $(CXX)
 LDFLAGS = -lrt
 
-TARGET = bin/main
+TARGET = bin/bspsieve
 SOURCES = main.cc $(wildcard src/*.cc)
 OBJECTS = $(SOURCES:.cc=.o)
 
