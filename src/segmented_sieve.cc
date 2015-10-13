@@ -12,7 +12,7 @@
 #include <vector>
 #include <cmath>
 
-const size_t CACHE_SIZE =  5 * 1024 * 7;
+const size_t CACHE_SIZE =  32 * 1024;
 extern processors P;
 extern size_t limit;
 extern size_t nPrint;
@@ -81,7 +81,6 @@ void segmented_sieve()
 
   vector<char> bucket(bucketSize);
 
-  double start = bsp_time();
   char latestInBucketWasPrime = 0;
 
   // Save the first and last prime of segment for twin program
@@ -191,7 +190,6 @@ void segmented_sieve()
       break;
     }
   }
-  double diff = bsp_time() - start;
 
   /********** Sieving done! Now the counters need to be added **********/
 
@@ -277,16 +275,6 @@ void segmented_sieve()
         goldbach(&segmentPrimes, limit, nPrint);
     }
     break;
-  }
-
-  bsp_sync();
-
-  for (processors i = 0; i < P; ++i)
-  {
-    if (i == core)
-      cout << "Core " << i << " took: " << diff << '\n';
-
-    bsp_sync();
   }
 
   bsp_end();
