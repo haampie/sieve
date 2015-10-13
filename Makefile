@@ -1,9 +1,9 @@
+CXXINCL = -I./bsp/include
+LDLIBS = -L./bsp/lib -lmcbsp1.2.0 -lpthread
 CXX = g++
 CXXFLAGS = -Wall -MMD -O3
-CXXINCL = -I../bsp/include
 LINKER = $(CXX)
-LDFLAGS =
-LDLIBS = -L../bsp/lib -lmcbsp1.2.0 -lpthread
+LDFLAGS = -lrt
 
 TARGET = bin/main
 SOURCES = main.cc $(wildcard src/*.cc)
