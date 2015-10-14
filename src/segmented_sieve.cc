@@ -87,6 +87,7 @@ void segmented_sieve()
   size_t lastPrimeNumberInSegment = 0;
   char firstPrimeInSegmentFound = 0;
 
+  double start = bsp_time();
   for (size_t bucketStart = segmentStart; bucketStart < segmentEnd; bucketStart += bucketSize)
   {
     // Upper bound of the current bucket
@@ -189,6 +190,7 @@ void segmented_sieve()
       break;
     }
   }
+  double diff = bsp_time() - start;
 
   /********** Sieving done! Now the counters need to be added **********/
 
@@ -274,6 +276,15 @@ void segmented_sieve()
         goldbach(&segmentPrimes, limit, nPrint);
     }
     break;
+  }
+
+  for(processors i = 0; i < P; ++i)
+  {
+    if(core == i)
+    {
+      cout << "Core " << i << " took: " << diff << '\n';
+    }
+    bsp_sync();
   }
 
   bsp_end();
